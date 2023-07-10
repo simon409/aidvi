@@ -1,13 +1,14 @@
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import Micro from '../../assets/microsoft.svg'
 import Decor from '../../assets/decor.jpg'
 import { Link } from 'react-router-dom/cjs/react-router-dom.min'
+import './style.css'
 
-const FirstSection = ({setSection, Mail, setMail}) => {
+const FirstSection = ({ section, setSection, Mail, setMail }) => {
   return (
-    <>
+    <div className={`containerElem absolute ${section == 0 ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'} transition-all delay-75 ease-in-out`}>
       {/*form */}
-      <div className="flex flex-col">
+      <div className={`flex flex-col`}>
 
         <div class="relative w-full">
           <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
@@ -17,12 +18,12 @@ const FirstSection = ({setSection, Mail, setMail}) => {
               </svg>
             </div>
           </div>
-          <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="you@example.com" value={Mail} onChange={(e)=>setMail(e.target.value)} required />
+          <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="you@example.com" value={Mail} onChange={(e) => setMail(e.target.value)} required />
         </div>
       </div>
       {/*button login */}
       <div className='w-full mt-[20px]'>
-        <button onClick={()=>setSection(1)} className='bg-secondary w-full text-white font-bold py-2 md:py-1 rounded-md text-[20px]'>Continue</button>
+        <button onClick={() => setSection(1)} className='bg-secondary w-full text-white font-bold py-2 md:py-1 rounded-md text-[20px]'>Continue</button>
       </div>
 
       {/*google and microsoft */}
@@ -49,17 +50,16 @@ const FirstSection = ({setSection, Mail, setMail}) => {
           </div>
         </button>
       </div>
-    </>
+    </div>
   )
 }
 
-const SecondSection = ({Mail, password, setPassword, setSection}) => {
+const SecondSection = ({ section, Mail, password, setPassword, setSection }) => {
   return (
-    <>
+    <div className={`containerElem absolute ${section == 1 ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'} transition-all delay-75 ease-in-out`}>
       {/*form */}
-      
-      <p className='text-start mb-3'>Create a password for <p className='text-secondary inline'>{Mail}</p> or <button onClick={()=>setSection(0)} className='text-secondary underline'>Change it</button></p>
-      <div className="flex flex-col">
+      <div className={`flex flex-col`}>
+        <p className='text-start mb-3'>Create a password for <p className='text-secondary inline'>{Mail}</p> or <button onClick={() => setSection(0)} className='text-secondary underline'>Change it</button></p>
         <div class="relative w-full">
           <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
             <div className='bg-white rounded-md w-fit h-fit p-2'>
@@ -76,7 +76,7 @@ const SecondSection = ({Mail, password, setPassword, setSection}) => {
       <div className='w-full mt-[20px]'>
         <button className='bg-secondary w-full text-white font-bold py-2 md:py-1 rounded-md text-[20px]'>Continue</button>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -92,8 +92,8 @@ export default function Register() {
         <div className='lg:mt-4 lg:ml-4 lg:relative absolute top-2 left-1/2 -translate-x-1/2'>
           <a href='/' className='text-[30px] font-normal text-primary'>✨aidvi</a>
         </div>
-        <div className="flex m-auto lg:w-[516px] w-3/4 text-center">
-          <div id="form">
+        <div className="flex mx-auto my-auto -translate-y-1/2 lg:w-[516px] w-3/4 text-center">
+          <div id="form" className='w-full'>
             {/*header */}
             <div className="lg:mb-16 mb-8">
               <h2 className='lg:text-[40px] text-[30px] font-bold text-primary'>Create your account</h2>
@@ -101,12 +101,14 @@ export default function Register() {
             </div>
 
             {/*Sections */}
-
-            {Section == 0 ? FirstSection({setSection: setSection, Mail: Mail, setMail: setMail}) : SecondSection({Mail:Mail, password:Pass, setPassword: setPass, setSection: setSection})}
-
-            <div className="lg:mt-[46px] mt-[20px]">
-              <p className='text-primary font-semibold'>you already have an account? <Link to="/login" className='text-secondary'>Login</Link></p>
+            <div className='relative'>
+              {FirstSection({ section: Section, setSection: setSection, Mail: Mail, setMail: setMail })}
+              {SecondSection({ section: Section, Mail: Mail, password: Pass, setPassword: setPass, setSection: setSection })}
+              <div className="lg:mt-[46px] mt-[20px] relative top-[300px]">
+                <p className='text-primary font-semibold'>you already have an account? <Link to="/login" className='text-secondary'>Login</Link></p>
+              </div>
             </div>
+
           </div>
         </div>
       </div>

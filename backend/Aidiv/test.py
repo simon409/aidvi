@@ -102,7 +102,7 @@ def handle_userinput(user_question,conversation):
 
 def main():
     # khod text mn pdf
-    docfile="amine.docx"
+    docfile = os.path.join(os.getcwd(), "amine.docx")
     text_khawi = docs_data(docfile)
     # 9sem text lchunks
     chunks = get_text_chunks(text_khawi)
