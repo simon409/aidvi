@@ -1,32 +1,27 @@
 import React from 'react'
-import NoCard from '../../../assets/nocardH.png'
 import Plane from '../../../assets/Plane.svg'
+
 export default function Hero() {
     return (
-        <div className='pt-[60px] w-screen h-screen'>
-            <div className='h-[70%] bg-lightblue flex'>
-                <div className='flex lg:container'>
-                    <div className="m-auto flex">
-                        <div className="h-fit w-1/2 flex">
+        <div id='home' className='pt-[60px] w-full h-screen'>
+            <div className='lg:h-[70%] h-fit lg:pt-[0px] pt-[30px] bg-lightblue flex'>
+                <div className='flex lg:container p-2'>
+                    <div className="m-auto flex lg:flex-row flex-col">
+                        <div className="h-fit lg:w-1/2  flex">
                             <div className="m-auto flex flex-col gap-5">
-                                <h1 className='text-[50px] leading-none' style={{ fontWeight: '800' }}>Turn your expertise 🤹 into profitable AI assistant 🤖</h1>
-                                <p className='text-[20px]'>
-                                    Build meaningful chatbots trained with your
-                                    specific knowledge,
-                                    and share it with your teams and customers
-                                    to gain productivity.
+                                <h1 className='lg:text-[50px] text-[40px] leading-none' style={{ fontWeight: '800' }}>Turn your expertise 🤹 into profitable AI assistant 🤖</h1>
+                                <p className='lg:text-[20px] text-[15px]'>
+                                    Build meaningful AI assistants trained with your expertise and knowledge.
+                                     And share it with your teams and customers to gain productivity.
                                 </p>
                                 <div className="flex gap-2">
-                                    <div id="link" className='my-auto w-1/2'>
-                                        <a href='/login' className='text-white bg-secondary block text-center py-4 rounded-md text-[20px] font-bold'>Get started for free</a>
-                                    </div>
-                                    <div id="image" className=' my-auto py-1/2'>
-                                        <img src={NoCard} alt="" />
+                                    <div id="link" className='my-auto lg:w-1/2 w-full'>
+                                        <a href='/login' className='text-white bg-secondary block text-center py-4 rounded-md text-[20px] font-bold'>Create my Aidvisor</a>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="h-fit w-1/2 flex">
+                        <div className="h-fit lg:w-1/2  flex">
                             <div className="py-auto">
                                 <img src={Plane} className='h-[300px]' alt="" />
                             </div>
@@ -34,9 +29,9 @@ export default function Hero() {
                     </div>
                 </div>
             </div>
-            <div className="h-[15%] bg-lighterblue flex">
+            <div className="min-h-[15%] h-fit bg-lighterblue flex">
                 <div className="flex lg:container w-full">
-                    <div className="my-auto w-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 justify-around">
+                    <div className="my-auto w-full grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 justify-around p-7">
                         <div className='w-full flex'>
                             <img className='h-4/5 mx-auto' src="https://8a563baecd14e0cd3049e074b6330b41.cdn.bubble.io/f1640793944847x640806144852785300/MixPanel%20Logo.svg" alt="" />
                         </div>
@@ -58,7 +53,7 @@ export default function Hero() {
                     </div>
                 </div>
             </div>
-            <div className="h-[15%]"></div>
+            <div className="min-h-[15%] w-fit"></div>
         </div>
     )
 }

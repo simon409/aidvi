@@ -1,29 +1,30 @@
 import React from 'react'
 import NavBar from './Components/NavBar'
 import Hero from './Components/Hero'
+import Banner from './Components/Banner'
+import Benefits from './Components/Benefits'
+import Steps from './Components/Steps'
+import Testimonials from './Components/Testimonials'
+import Pricing from './Components/Pricing'
+import ExtraSection from './Components/ExtraSection'
+import Footer from './Components/Footer'
 
 export default function Landing() {
   return (
     <div>
-        <div className="fixed w-full">
+        <div className="fixed w-full z-50">
             <NavBar />
         </div>
         <Hero />
-
-
         {/*banner */}
-        <div className="fixed">
-            <div className="flex w-screen bg-secondary bottom-0 absolute h-[60px]">
-              <div className="flex w-20">
-                <a href="" className='my-auto mx-auto text-2xl text-white font-bold'>X</a>
-              </div>
-              <div className="flex w-full">
-                <a href="/login" className='h-full w-full text-center text-white font-bold flex hover:underline'>
-                  <p className='m-auto'>Exclusive Offer: Try our Public Bots now!</p>
-                </a>
-              </div>
-            </div>
-        </div>
+        <Banner />
+        
+        <Benefits />
+        <Steps />
+        <Testimonials />
+        <Pricing />
+        <ExtraSection />
+        <Footer />
     </div>
   )
 }

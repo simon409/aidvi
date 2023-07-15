@@ -14,7 +14,9 @@ export default {
         "placeholder" : "#D4D8DD",
         "lightblue" : "#E8F5FE",
         "lighterblue" : "#F4FCFD",
-        "hover" : "#111D57"
+        "hover" : "#111D57",
+        "orange" : "#FA8A8C",
+        "lightorange" : "#FDF2F2"
       },
       container: {
         // you can configure the container to be centered
