@@ -8,6 +8,7 @@ export default {
     extend: {
       colors : {
         "primary" : "#111D57",
+        "lightprimary" : "#1F2937",
         "secondary" : "#157AFE",
         "subtitles" : "#7D85AE",
         "input" : "#F5F7F9",

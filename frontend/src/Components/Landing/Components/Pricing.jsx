@@ -11,7 +11,7 @@ export default function Pricing() {
           <div className="flex flex-col gap-8 h-full">
             <h3 className='text-xl font-bold'>Starter</h3>
             <h2 className='text-5xl font-bold'>Free</h2>
-            <a href="" className='text-xl bg-secondary w-fit py-4 px-10 rounded-lg text-white font-bold '>Get Starter Plan</a>
+            <a href="/register" className='text-xl bg-secondary w-fit py-4 px-10 rounded-lg text-white font-bold '>Get Starter Plan</a>
             <ul className='flex flex-col gap-5'>
               <li className='flex text-xl'> <div className="my-auto px-2"><FiCheckCircle /></div> Talk with public chatbots</li>
               <li className='flex text-xl'> <div className="my-auto px-2"><FiCheckCircle /></div> Talk with private chatbots (if added by bot creator)</li>
@@ -22,7 +22,7 @@ export default function Pricing() {
           <div className="flex flex-col gap-8 h-full">
             <h3 className='text-xl font-bold'>Essential</h3>
             <h2 className='text-5xl font-bold'>$30<p className='text-xl inline'>/month</p></h2>
-            <a href="" className='text-xl bg-secondary w-fit py-4 px-10 rounded-lg text-white font-bold '>Get Essential Plan</a>
+            <a href="/register" className='text-xl bg-secondary w-fit py-4 px-10 rounded-lg text-white font-bold '>Get Essential Plan</a>
             <ul className='flex flex-col gap-5'>
               <li className='flex text-xl'> <div className="my-auto px-2"><FiCheckCircle /></div> Features of Starter Plan</li>
               <li className='flex text-xl'> <div className="my-auto px-2"><FiCheckCircle /></div> Create 1 chatbot</li>
@@ -34,7 +34,7 @@ export default function Pricing() {
           <div className="flex flex-col gap-8 h-full">
             <h3 className='text-xl font-bold'>Pro</h3>
             <h2 className='text-5xl font-bold'>$100<p className='text-xl inline'>/month</p></h2>
-            <a href="" className='text-xl bg-secondary w-fit py-4 px-10 rounded-lg text-white font-bold '>Get Pro Plan</a>
+            <a href="/register" className='text-xl bg-secondary w-fit py-4 px-10 rounded-lg text-white font-bold '>Get Pro Plan</a>
             <ul className='flex flex-col gap-5'>
               <li className='flex text-xl'> <div className="my-auto px-2"><FiCheckCircle /></div> Features of Essential Plan</li>
               <li className='flex text-xl'> <div className="my-auto px-2"><FiCheckCircle /></div> Create unlimited chatbots</li>

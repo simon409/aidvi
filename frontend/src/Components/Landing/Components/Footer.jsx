@@ -1,6 +1,5 @@
 import React from 'react'
 import {AiFillInstagram, AiFillYoutube, AiFillTwitterCircle} from 'react-icons/ai'
-import { FiInstagram } from 'react-icons/fi'
 
 export default function Footer() {
     return (
