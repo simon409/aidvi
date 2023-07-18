@@ -20,9 +20,6 @@ export default function Login() {
             .then((response) => response.json())
             .then((data) => {
                 if (data.message === 'Login successful') {
-                    // Store session data in local storage
-                    localStorage.setItem('loggedin', true);
-                    localStorage.setItem('PersonID', data.user.PersonID);
                     // Redirect to the desired page
                     History.push('/app/bots');
                 } else {
