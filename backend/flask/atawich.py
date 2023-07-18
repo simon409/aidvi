@@ -24,6 +24,11 @@ def login():
     user = cursor.fetchone()
 
     if user:
+        
+        # Create session variables
+        session['loggedin'] = True
+        session['username'] = user['username']
+
         return jsonify({'message': 'Login successful', 'user': user}), 200
     else:
         return jsonify({'message': 'Invalid credentials'}), 401
