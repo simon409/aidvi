@@ -19,7 +19,7 @@ export default function SideBar() {
       </div>
       <div className="relative bottom-0 p-4">
         <div className="px-3 py-2 bg-primary text-white rounded-md">
-          <a href="#" className='hover:underline'>Featured in Connect Institute</a>
+          <a href="#" className='hover:underline'>Featured in ...</a>
         </div>
       </div>
     </div>
