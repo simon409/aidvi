@@ -1,9 +1,40 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Micro from '../../assets/microsoft.svg'
 import Decor from '../../assets/decor.jpg'
-import { Link } from 'react-router-dom/cjs/react-router-dom.min'
+import { Link, useHistory } from 'react-router-dom/cjs/react-router-dom.min'
 
 export default function Login() {
+    const [email, setmail] = useState('')
+    const [password, setpass] = useState('')
+    const History = useHistory()
+
+    const HandelLogin = () => {
+        // Perform login API call and handle response
+        fetch('http://localhost:5000/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.message === 'Login successful') {
+                    // Store session data in local storage
+                    localStorage.setItem('loggedin', true);
+                    localStorage.setItem('PersonID', data.user.PersonID);
+                    // Redirect to the desired page
+                    History.push('/app/bots');
+                } else {
+                    setErrorMessage(data.message);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                setErrorMessage('An error occurred. Please try again.');
+            });
+    }
+
     return (
         <div className='w-screen h-screen flex'>
             <div className="lg:w-1/2 w-full h-full flex flex-col">
@@ -28,7 +59,7 @@ export default function Login() {
                                         </svg>
                                     </div>
                                 </div>
-                                <input type="text" class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="you@example.com" required />
+                                <input type="text" value={email} onChange={(e) => setmail(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="you@example.com" required />
                             </div>
                             <div class="relative w-full mt-[20px]">
                                 <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
@@ -39,16 +70,16 @@ export default function Login() {
                                         </svg>
                                     </div>
                                 </div>
-                                <input type="password" class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="password" required />
+                                <input type="password" value={password} onChange={(e) => setpass(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="password" required />
                             </div>
                         </div>
-                        {/*forgot pass */}
+                        {/*forgot password */}
                         <div className='w-full mt-[20px] md:mt-[15px] text-right'>
                             <button className='text-secondary font-bold'>Forgot password?</button>
                         </div>
                         {/*button login */}
                         <div className='w-full mt-[20px]'>
-                            <button className='bg-secondary w-full text-white font-bold py-2 md:py-1 rounded-md text-[20px]'>Login</button>
+                            <button onClick={()=>HandelLogin()}  className='bg-secondary w-full text-white font-bold py-2 md:py-1 rounded-md text-[20px]'>Login</button>
                         </div>
 
                         {/*google and microsoft */}
@@ -61,7 +92,7 @@ export default function Login() {
                             <button className='bg-input flex w-full text-primary font-bold py-2 rounded-md text-[20px]'>
                                 <div className='flex m-auto gap-3'>
                                     <div className='w-6 my-auto'>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 326667 333333" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd"><path d="M326667 170370c0-13704-1112-23704-3518-34074H166667v61851h91851c-1851 15371-11851 38519-34074 54074l-311 2071 49476 38329 3428 342c31481-29074 49630-71852 49630-122593m0 0z" fill="#4285f4"/><path d="M166667 333333c44999 0 82776-14815 110370-40370l-52593-40742c-14074 9815-32963 16667-57777 16667-44074 0-81481-29073-94816-69258l-1954 166-51447 39815-673 1870c27407 54444 83704 91852 148890 91852z" fill="#34a853"/><path d="M71851 199630c-3518-10370-5555-21482-5555-32963 0-11482 2036-22593 5370-32963l-93-2209-52091-40455-1704 811C6482 114444 1 139814 1 166666s6482 52221 17777 74814l54074-41851m0 0z" fill="#fbbc04"/><path d="M166667 64444c31296 0 52406 13519 64444 24816l47037-45926C249260 16482 211666 1 166667 1 101481 1 45185 37408 17777 91852l53889 41853c13520-40185 50927-69260 95001-69260m0 0z" fill="#ea4335"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 326667 333333" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="evenodd" clip-rule="evenodd"><path d="M326667 170370c0-13704-1112-23704-3518-34074H166667v61851h91851c-1851 15371-11851 38519-34074 54074l-311 2071 49476 38329 3428 342c31481-29074 49630-71852 49630-122593m0 0z" fill="#4285f4" /><path d="M166667 333333c44999 0 82776-14815 110370-40370l-52593-40742c-14074 9815-32963 16667-57777 16667-44074 0-81481-29073-94816-69258l-1954 166-51447 39815-673 1870c27407 54444 83704 91852 148890 91852z" fill="#34a853" /><path d="M71851 199630c-3518-10370-5555-21482-5555-32963 0-11482 2036-22593 5370-32963l-93-2209-52091-40455-1704 811C6482 114444 1 139814 1 166666s6482 52221 17777 74814l54074-41851m0 0z" fill="#fbbc04" /><path d="M166667 64444c31296 0 52406 13519 64444 24816l47037-45926C249260 16482 211666 1 166667 1 101481 1 45185 37408 17777 91852l53889 41853c13520-40185 50927-69260 95001-69260m0 0z" fill="#ea4335" /></svg>
                                     </div>
                                     Google
                                 </div>
@@ -85,13 +116,13 @@ export default function Login() {
                 <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                     {/* SVG */}
                     <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="0 0 920 997" fill="none">
-                    <defs>
-                        <pattern id="pattern0" width="100%" height="100%" patternUnits="userSpaceOnUse">
-                        <image xlinkHref={Decor} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
-                        </pattern>
-                    </defs>
-                    <path d="M890 -4.39392e-05C906.568 -4.39004e-05 920 13.4314 920 30V967C920 983.568 906.568 997 890 997H30C13.4314 997 -3.05176e-05 983.568 -3.05176e-05 967V103.648C-3.05176e-05 85.2 16.6112 71.0759 35.0461 70.3836C50.5997 69.7995 67.8653 66.9539 79 58.5C88.3992 51.3637 94.6147 37.8682 98.5541 25.6363C103.174 11.2898 115.777 -4.575e-05 130.849 -4.57147e-05L890 -4.39392e-05Z" fill="url(#pattern0)" />
-                    <path d="M890 -4.39392e-05C906.568 -4.39004e-05 920 13.4314 920 30V967C920 983.568 906.568 997 890 997H30C13.4314 997 -3.05176e-05 983.568 -3.05176e-05 967V103.648C-3.05176e-05 85.2 16.6112 71.0759 35.0461 70.3836C50.5997 69.7995 67.8653 66.9539 79 58.5C88.3992 51.3637 94.6147 37.8682 98.5541 25.6363C103.174 11.2898 115.777 -4.575e-05 130.849 -4.57147e-05L890 -4.39392e-05Z" fill="black" fillOpacity="0.3" />
+                        <defs>
+                            <pattern id="pattern0" width="100%" height="100%" patternUnits="userSpaceOnUse">
+                                <image xlinkHref={Decor} width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
+                            </pattern>
+                        </defs>
+                        <path d="M890 -4.39392e-05C906.568 -4.39004e-05 920 13.4314 920 30V967C920 983.568 906.568 997 890 997H30C13.4314 997 -3.05176e-05 983.568 -3.05176e-05 967V103.648C-3.05176e-05 85.2 16.6112 71.0759 35.0461 70.3836C50.5997 69.7995 67.8653 66.9539 79 58.5C88.3992 51.3637 94.6147 37.8682 98.5541 25.6363C103.174 11.2898 115.777 -4.575e-05 130.849 -4.57147e-05L890 -4.39392e-05Z" fill="url(#pattern0)" />
+                        <path d="M890 -4.39392e-05C906.568 -4.39004e-05 920 13.4314 920 30V967C920 983.568 906.568 997 890 997H30C13.4314 997 -3.05176e-05 983.568 -3.05176e-05 967V103.648C-3.05176e-05 85.2 16.6112 71.0759 35.0461 70.3836C50.5997 69.7995 67.8653 66.9539 79 58.5C88.3992 51.3637 94.6147 37.8682 98.5541 25.6363C103.174 11.2898 115.777 -4.575e-05 130.849 -4.57147e-05L890 -4.39392e-05Z" fill="black" fillOpacity="0.3" />
                     </svg>
 
                     {/* Content */}

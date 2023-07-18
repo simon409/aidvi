@@ -1,37 +1,33 @@
-from flask import Flask,render_template, request,redirect, url_for, session
+from flask import Flask, request,redirect, url_for, session, jsonify
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
+from flask_cors import CORS  # Import the CORS module
  
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
  
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'WheelyStrongPwd'
-app.config['MYSQL_DB'] = 'aidiv'
+app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_DB'] = 'aidvi'
  
 mysql = MySQL(app)
 
-@app.route('/aidivlogin/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Output a message
-    msg = ''
-    # Check if "email" and "password" are there
-    if request.method == 'POST' and 'email' in request.form and 'password' in request.form:
-        email = request.form['email']
-        password = request.form['password']
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM Persons WHERE email = %s AND password = %s', (email, password,))
-        account = cursor.fetchone()
-        if account:
-            session['loggedin'] = True
-            session['id'] = account['id']
-            session['username'] = account['username']
-            return redirect(url_for('landing'))
-        else:
-            # Person doesn't exist or email or password is incorrect
-            msg = 'Incorrect email or password!'
-    return redirect(url_for('landing', msg=msg))
+    email = request.json['email']
+    password = request.json['password']
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute('SELECT * FROM Persons WHERE Email_P = %s AND password = %s', (email, password,))
+    user = cursor.fetchone()
+
+    if user:
+        return jsonify({'message': 'Login successful', 'user': user}), 200
+    else:
+        return jsonify({'message': 'Invalid credentials'}), 401
+
 
 
 
@@ -39,42 +35,31 @@ def login():
 
 @app.route('/signup', methods=['POST'])
 def signup():
-    msg = ''
-    # Check if "email" and "password" are there
+    # Get the request data
+    data = request.json
+    first_name = data['firstName']
+    last_name = data['lastName']
+    address = data['address']
+    email = data['email']
+    password = data['password']
 
-    if 'email' in request.form and 'password' in request.form:
-        # Creating variables that we will need
+    # Validate the data (you can add more validation if needed)
 
-        LastName = request.form["LastName"]
-        FirstName = request.form["FirstName"]
-        Adresse_P = request.form["Adresse_P"]
-        email = request.form["email"]
-        password = request.form["password"]
-        
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM Persons WHERE email = %s', (email,))
-        req_res = cursor.fetchone()
-        # validatte each imput before we answer anything
+    # Check if the email is already registered
+    cursor = mysql.connection.cursor()
+    cursor.execute('SELECT * FROM Persons WHERE Email_P = %s', (email,))
+    account = cursor.fetchone()
 
-        if req_res:
-            msg = "This email is already registered."
-        elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-            msg = 'Invalid email address!'
-        elif not LastName or not FirstName or not Adresse_P or not password or not email:
-            msg = 'Please fill out the form!'
-        else:
-            cursor.execute('INSERT INTO Persons (LastName, FirstName, Address_P, password, email) VALUES (%s, %s, %s, %s, %s)',
-                           (LastName, FirstName, Adresse_P, password, email))
-            mysql.connection.commit()
-            msg = 'You have successfully registered!'
-            return redirect(url_for('landing'))
-    
-    return redirect(url_for('landing', msg=msg))
+    if account:
+        return jsonify({'msg': 'This email is already registered.'})
 
+    # Insert the user into the database
+    cursor.execute('INSERT INTO Persons (FirstName, LastName, Adress_P, Email_P, Password) VALUES (%s, %s, %s, %s, %s)',
+                   (first_name, last_name, address, email, password))
+    mysql.connection.commit()
 
-@app.route('/landing')
-def landing():
-    return render_template('landing.jsx')
+    return jsonify({'msg': 'You have successfully registered!'})
 
-
-
+if __name__ == '__main__':
+    #app.secret_key = 'your_secret_key'  # Set a secret key for session management
+    app.run(debug=True)
