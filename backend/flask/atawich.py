@@ -1,11 +1,16 @@
 from flask import Flask, request,redirect, url_for, session, jsonify
+from flask_session import Session
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
 import re
+import os
+import binascii
 from flask_cors import CORS  # Import the CORS module
  
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+app.secret_key = binascii.hexlify(os.urandom(16)).decode()
+
  
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
@@ -24,18 +29,24 @@ def login():
     user = cursor.fetchone()
 
     if user:
-        
         # Create session variables
         session['loggedin'] = True
-        session['username'] = user['username']
+        session['user'] = user
 
         return jsonify({'message': 'Login successful', 'user': user}), 200
     else:
         return jsonify({'message': 'Invalid credentials'}), 401
 
 
+@app.route('/check_login', methods=['GET'])
+def check_login():
+    #do a check if loggedin and return a json
+    print("test")
 
-
+@app.route('/get_user_data', methods=['GET'])
+def get_user_data():
+    #get user data and return it as json
+    print("test")
 
 
 @app.route('/signup', methods=['POST'])
@@ -65,6 +76,5 @@ def signup():
 
     return jsonify({'msg': 'You have successfully registered!'})
 
-if __name__ == '__main__':
-    #app.secret_key = 'your_secret_key'  # Set a secret key for session management
+if __name__ == '__main__':  # Set a secret key for session management
     app.run(debug=True)
