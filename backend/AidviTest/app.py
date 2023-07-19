@@ -7,11 +7,14 @@ from flask_cors import CORS, cross_origin
 from models import db, User
 
 app = Flask(__name__)
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config.from_object(ApplicationConfig)
 
 bcrypt = Bcrypt(app)
 CORS(app, supports_credentials=True)
 server_session = Session(app)
+server_session.init_app(app)
 db.init_app(app)
 
 with app.app_context():
@@ -82,7 +85,7 @@ def login_user():
 
 @app.route('/logout', methods=['POST'])
 def logout_user():
-    session.pop('user_id')
+    session.pop("user_id")
     return "200"
 
 if __name__ == "__main__":
