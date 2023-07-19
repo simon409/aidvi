@@ -5,7 +5,7 @@ import MySQLdb.cursors
 import re
 import os
 import binascii
-from flask_cors import CORS  # Import the CORS module
+from flask_cors import CORS, cross_origin  # Import the CORS module
  
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
@@ -19,6 +19,7 @@ app.config['MYSQL_DB'] = 'aidvi'
  
 mysql = MySQL(app)
 
+@cross_origin
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     email = request.json['email']
@@ -37,18 +38,19 @@ def login():
     else:
         return jsonify({'message': 'Invalid credentials'}), 401
 
-
+@cross_origin
 @app.route('/check_login', methods=['GET'])
 def check_login():
     #do a check if loggedin and return a json
     print("test")
 
+@cross_origin
 @app.route('/get_user_data', methods=['GET'])
 def get_user_data():
     #get user data and return it as json
     print("test")
 
-
+@cross_origin
 @app.route('/signup', methods=['POST'])
 def signup():
     # Get the request data
