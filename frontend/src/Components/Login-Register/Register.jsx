@@ -10,7 +10,6 @@ export default function Register() {
     const [AddressP, setAddressP] = useState('')
     const [Mail, setMail] = useState('')
     const [Pass, setPass] = useState('')
-    const [Message, setMessage] = useState('')
 
     const History = useHistory()
 
@@ -32,19 +31,7 @@ export default function Register() {
           },
           body: JSON.stringify(payload),
         })
-          .then((response) => response.json())
-          .then((data) => {
-            setMessage(data.msg);
-            if (data.msg === 'You have successfully registered!') {
-              // Handle successful registration (e.g., redirect to login page)
-                console.log(data.msg)
-                History.push('/login')
-            }
-          })
-          .catch((error) => {
-            console.error('Error:', error);
-            setMessage('An error occurred. Please try again.');
-          });
+          .then((response) => response.status == 200 ? History.push('/app/bots') : null)
       };
 
     return (

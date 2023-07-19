@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Micro from '../../assets/microsoft.svg'
 import Decor from '../../assets/decor.jpg'
 import { Link, useHistory } from 'react-router-dom/cjs/react-router-dom.min'
@@ -7,6 +7,27 @@ export default function Login() {
     const [email, setmail] = useState('')
     const [password, setpass] = useState('')
     const History = useHistory()
+
+    useEffect(() => {
+      // Check login status
+        fetch('http://localhost:5000/@me', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
+        })
+            .then((response) => {
+                if(response.status == 200){
+                    History.push('/app/bots');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                return
+            });
+    }, [])
+    
 
     const HandelLogin = () => {
         // Perform login API call and handle response
@@ -17,18 +38,17 @@ export default function Login() {
             },
             body: JSON.stringify({ email, password }),
         })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data.message === 'Login successful') {
-                    // Redirect to the desired page
+            .then((response) => {
+                if(response.status == 200){
                     History.push('/app/bots');
-                } else {
-                    setErrorMessage(data.message);
+                }
+                else{
+                    alert("Invalide credientials")
                 }
             })
             .catch((error) => {
                 console.error('Error:', error);
-                setErrorMessage('An error occurred. Please try again.');
+                //setErrorMessage('An error occurred. Please try again.');
             });
     }
 
