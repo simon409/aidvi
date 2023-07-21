@@ -8,6 +8,26 @@ export default function Login() {
     const [loggedIn, setLoggedIn] = useState(false);
     const [password, setpass] = useState('')
     const history = useHistory()
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    const [isValid, setIsValid] = useState(false);
+    const [isFilled, setFilled] = useState(false);
+
+    const handleEmailInputChange = (event) => {
+        const inputValue = event.target.value;
+        setmail(inputValue);
+        setIsValid(emailRegex.test(inputValue));
+    };
+
+    const handlePassInputChange = (event) => {
+        const inputValue = event.target.value;
+        setpass(inputValue);
+    };
+
+    useEffect(() => {
+        setFilled( isValid && email.length != 0 && password.length != 0)
+    }, [email, password])
+    
 
     useEffect(() => {
         // Check login status
@@ -33,6 +53,7 @@ export default function Login() {
 
     const HandelLogin = () => {
         // Perform login API call and handle response
+
         fetch('http://localhost:5000/login', {
             method: 'POST',
             headers: {
@@ -81,7 +102,7 @@ export default function Login() {
                                             </svg>
                                         </div>
                                     </div>
-                                    <input type="text" value={email} onChange={(e) => setmail(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="you@example.com" required />
+                                    <input type="text" value={email} onChange={(e) => handleEmailInputChange(e)} className={`border-2 border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg block w-full pl-14 p-2.5 transition-all delay-75 ${isValid ? 'focus:ring-blue-500 focus:border-blue-500 focus:bg-blue-50' : 'focus:ring-red-500 focus:border-red-500 focus:bg-red-50'} outline-none`} placeholder="you@example.com" required />
                                 </div>
                                 <div class="relative w-full mt-[20px]">
                                     <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
@@ -92,7 +113,7 @@ export default function Login() {
                                             </svg>
                                         </div>
                                     </div>
-                                    <input type="password" value={password} onChange={(e) => setpass(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="password" required />
+                                    <input type="password" value={password} onChange={(e) => handlePassInputChange(e)} className="bg-gray-50 border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg block w-full pl-14 p-2.5 outline-none dark:focus:ring-blue-500 dark:focus:border-blue-500 border-2 transition-all delay-75" placeholder="password" required />
                                 </div>
                             </div>
                             {/*forgot password */}
@@ -101,7 +122,7 @@ export default function Login() {
                             </div>
                             {/*button login */}
                             <div className='w-full mt-[20px]'>
-                                <button onClick={() => HandelLogin()} className='bg-secondary w-full text-white font-bold py-2 md:py-1 rounded-md text-[20px]'>Login</button>
+                                <button onClick={() => HandelLogin()} className={`w-full text-white font-bold py-2 md:py-1 rounded-md text-[20px] ${isFilled ? 'bg-secondary' : 'bg-gray-400'}`} disabled={!isFilled}>Login</button>
                             </div>
     
                             {/*google and microsoft */}

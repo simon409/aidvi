@@ -66,7 +66,7 @@ export default function Account() {
                     <input type="checkbox" />
                     <span class="slider round"></span>
                   </label>
-                  <p className='my-auto'>Receive Chat Thing app notifications emails?</p>
+                  <p className='my-auto'>Receive Aidvi app notifications emails?</p>
                   </div>
                   <div className='flex gap-2 p-4 bg-secondary rounded-md text-white'>
                     <div className='my-auto'><AiFillInfoCircle/></div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Micro from '../../assets/microsoft.svg'
 import Decor from '../../assets/decor.jpg'
 import { Link } from 'react-router-dom/cjs/react-router-dom.min'
@@ -10,8 +10,25 @@ export default function Register() {
     const [AddressP, setAddressP] = useState('')
     const [Mail, setMail] = useState('')
     const [Pass, setPass] = useState('')
-
     const History = useHistory()
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+    const [isValid, setIsValid] = useState(false);
+    const [isFilled, setFilled] = useState(false);
+
+    
+
+    const handleEmailInputChange = (event) => {
+        const inputValue = event.target.value;
+        setMail(inputValue);
+        setIsValid(emailRegex.test(inputValue));
+    };
+
+    useEffect(() => {
+        setFilled( isValid && Mail.length != 0 && Pass.length > 8 && lastName.length != 0 && firstName.length != 0 && AddressP.length != 0)
+    }, [firstName, Mail, Pass, lastName, AddressP])
+    
 
 
     const HandelSignUp = () => {
@@ -24,7 +41,7 @@ export default function Register() {
             password : Pass,
         };
     
-        fetch('http://localhost:5000/signup', {
+        fetch('http://localhost:5000/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -53,12 +70,12 @@ export default function Register() {
                             <div className="flex gap-2">
                                 <div className="w-1/2">
                                     <div class="relative w-full">
-                                        <input type="text" value={firstName} onChange={(e) => setfirstName(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-5 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="First name" required />
+                                        <input type="text" value={firstName} onChange={(e) => setfirstName(e.target.value)} className="bg-gray-50 border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg block w-full pl-5 p-2.5 outline-none dark:focus:ring-blue-500 dark:focus:border-blue-500 border-2 transition-all delay-75" placeholder="First name" required />
                                     </div>
                                 </div>
                                 <div className="w-1/2">
                                     <div class="relative w-full">
-                                        <input type="text" value={lastName} onChange={(e) => setlastName(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-5 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="Last name" required />
+                                        <input type="text" value={lastName} onChange={(e) => setlastName(e.target.value)} className="bg-gray-50 border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg block w-full pl-5 p-2.5 outline-none dark:focus:ring-blue-500 dark:focus:border-blue-500 border-2 transition-all delay-75" placeholder="Last name" required />
                                     </div>
                                 </div>
                             </div>
@@ -76,7 +93,7 @@ export default function Register() {
                                         </svg>
                                     </div>
                                 </div>
-                                <input type="text" value={AddressP} onChange={(e) => setAddressP(e.target.value)} autoComplete="off" autoCapitalize="none" class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="State/City, Country" required />
+                                <input type="text" value={AddressP} onChange={(e) => setAddressP(e.target.value)} autoComplete="off" autoCapitalize="none" className="bg-gray-50 border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg block w-full pl-14 p-2.5 outline-none dark:focus:ring-blue-500 dark:focus:border-blue-500 border-2 transition-all delay-75" placeholder="State/City, Country" required />
                             </div>
                             <div class="relative w-full mt-[20px]">
                                 <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
@@ -86,7 +103,7 @@ export default function Register() {
                                         </svg>
                                     </div>
                                 </div>
-                                <input type="email" value={Mail} onChange={(e) => setMail(e.target.value)} autoComplete="off" autoCapitalize="none" class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="you@example.com" required />
+                                <input type="email" value={Mail} onChange={(e) => handleEmailInputChange(e)} autoComplete="off" autoCapitalize="none" className={` bg-gray-50 border-2 border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg block w-full pl-14 p-2.5 transition-all delay-75 ${isValid ? 'focus:ring-blue-500 focus:border-blue-500 focus:bg-blue-50' : 'focus:ring-red-500 focus:border-red-500 focus:bg-red-50'} outline-none`} placeholder="you@example.com" required />
                             </div>
 
                             <div class="relative w-full mt-[20px]">
@@ -98,12 +115,12 @@ export default function Register() {
                                         </svg>
                                     </div>
                                 </div>
-                                <input type="password" value={Pass} onChange={(e) => setPass(e.target.value)} autoComplete="off" autoCapitalize="none" class="bg-gray-50 border border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-14 p-2.5  dark:bg-[#F5F7F9] dark:border-[#F5F7F8] dark:placeholder-[#D4D8DD] dark:text-[] dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all delay-75" placeholder="password" required />
+                                <input type="password" value={Pass} onChange={(e) => setPass(e.target.value)} autoComplete="off" autoCapitalize="none" className="bg-gray-50 border-gray-300 text-gray-900 lg:text-[20px] text-[15px] rounded-lg block w-full pl-14 p-2.5 outline-none dark:focus:ring-blue-500 dark:focus:border-blue-500 border-2 transition-all delay-75" placeholder="password  (8 characters min)" required />
                             </div>
                         </div>
                         {/*button login */}
                         <div className='w-full mt-[20px]'>
-                            <button onClick={() => HandelSignUp()} className='bg-secondary w-full text-white font-bold py-2 md:py-1 rounded-md text-[20px]'>Sign up</button>
+                            <button onClick={() => HandelSignUp()} className={`w-full text-white font-bold py-2 md:py-1 rounded-md text-[20px] ${isFilled ? 'bg-secondary' : 'bg-gray-400'}`} disabled={!isFilled}>Sign up</button>
                         </div>
 
                         {/*google and microsoft */}
