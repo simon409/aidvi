@@ -12,6 +12,7 @@ import Landing from './Components/Landing/Landing'
 import Bots from './Components/app/Bots'
 import Billing from './Components/app/Billing'
 import Account from './Components/app/Account'
+import NewBots from './Components/app/bots/NewBot'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route exact path="/app/bots" component={Bots} />
         <Route exact path="/app/account" component={Account} />
         <Route exact path="/app/billing" component={Billing} />
+        <Route exact path="/app/bots/new" component={NewBots} />
       </Switch>
     </Router>
   )

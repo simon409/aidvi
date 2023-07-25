@@ -45,9 +45,9 @@ export default function Bots() {
             <div className="flex flex-col mt-10">
               <div className="flex justify-between">
                 <h3 className='font-bold'>Bots</h3>
-                <button className='flex bg-primary px-3 py-2 rounded-md text-white'>
+                <a href='/app/bots/new' className='flex bg-primary px-3 py-2 rounded-md text-white'>
                   <div className='my-auto text-2xl'><BsPlus /></div> <p>Add bot</p>
-                </button>
+                </a>
               </div>
               <div className='mt-5 w-full'>
                 <div class="relative overflow-y-auto rounded-md">
