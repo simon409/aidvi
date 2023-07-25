@@ -12,3 +12,27 @@
 html{
   scroll-behavior: smooth;
 }
+
+/* Styling the scrollbar */
+*::-webkit-scrollbar {
+  width: 7px;
+  border-radius: 20px;
+
+}
+
+*::-webkit-scrollbar-track {
+  background: #157AFE;
+  border-radius: 20px;
+
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #111D57;
+  border-radius: 20px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #FA8A8C;
+  border-radius: 20px;
+
+}

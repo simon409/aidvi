@@ -74,7 +74,7 @@ export default function Bots() {
                     <tbody>
                       <tr class="bg-white border-b">
                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                          <a href="" className='text-secondary font-bold'>testbot</a>
+                          <a href="/bot/bot_id1" className='text-secondary font-bold'>testbot</a>
                         </th>
                         <td class="px-6 py-4">
                           05/07/2023 10:13

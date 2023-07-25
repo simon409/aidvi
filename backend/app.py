@@ -22,9 +22,11 @@ from docx import Document
 from youtube_transcript_api import YouTubeTranscriptApi as yta
 import re
 import requests
+import json
 import re
 from bs4 import BeautifulSoup
 import csv
+from aidvi_functions import process_file, get_conversation_chain, get_text_chunks, load_vectorstore, get_vectorstore
 
 #the app
 
@@ -117,48 +119,60 @@ def logout_user():
     #some thing to delete the sessions
     return "200"
 
-@app.route('/get_userbot')
+@app.route('/get_userbot', methods=['POST'])
 def get_bot_by_user_id():
     data = request.json
     user_id = data['user_id']
     bot_id = data['bot_id']
+    directory_path = './files/' + user_id + '/' + bot_id
+    #Include the conversation_chain in the response
+    response_data = {
+        "path": directory_path,
+    }
 
+    # Return the response_data as JSON response
+    return jsonify(response_data)
+
+
+@app.route('/get_answer', methods=['POST'])
+def get_answer():
+    data = request.json
+    directory_path = data["directory_path"]
+    question = data["question"]
+    response_data = {}
+
+    result = ""
+    # Iterate over all files in the directory and its subdirectories
+    for root, dirs, files in os.walk(directory_path):
+        for file_name in files:
+            file_path = os.path.join(root, file_name)
+            try:
+                abdo = process_file(file_path)
+                result += abdo
+            except PermissionError as e:
+                print(f"Permission error: {e} - Skipping file: {file_path}")
+
+    chunks = get_text_chunks(result)
+    # sore chunks o ebadihom
+    get_vectorstore(chunks)
+    vectorstore = load_vectorstore()
+    # sawb snsla
+    conversation_chain = get_conversation_chain(vectorstore)
+
+    if question.strip():
+        response = conversation_chain({'question': question})
+        chat_history = response['chat_history']
+
+        # Retrieve the bot's response from the chat history
+        bot_response = chat_history[-1].content if chat_history else "Error: Bot response not found."
+
+        # Add the bot's response to the response_data dictionary
+        response_data['response'] = bot_response
+        print(response_data)
+    else:
+        print("didn't enter")
+
+    return jsonify(response_data)
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-# def main():
-#     try:
-#         # Specify the path to the directory containing the files
-#         directory_path = './files'
-#         result=""
-#         # Iterate over all files in the directory and its subdirectories
-#         for root, dirs, files in os.walk(directory_path):
-#             for file_name in files:
-#                 file_path = os.path.join(root, file_name)
-#                 abdo=process_file(file_path)
-#                 result+=abdo
-
-#         print(result)   
-#         chunks = get_text_chunks(result)
-#         # sore chunks o ebadihom
-#         get_vectorstore(chunks)
-#         vectorstore = load_vectorstore()
-#         # sawb snsla
-#         conversation = get_conversation_chain(vectorstore)
-#         while True:
-#             question = input("You:")
-#             if question.lower() == "exit":
-#                 break
-
-#             if question.strip():
-#                 print("Bot is typing...")
-#                 response = conversation({'question': question})
-#                 chat_history = response['chat_history']
-
-#                 # Retrieve the bot's response from the chat history
-#                 bot_response = chat_history[-1].content if chat_history else "Error: Bot response not found."
-#                 print("Bot:", bot_response)
-                
-#     except Exception as e:
-#         print("An error occurred:", e)
