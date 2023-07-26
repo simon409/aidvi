@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 import csv
 
 load_dotenv()
-openai_api_key="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"
+openai_api_key=os.environ["OPEN_AI_API_KEY"]
 conversation=""
 def pdf__data(pdffile):
     text = ""
@@ -87,7 +87,6 @@ def get_vectorstore(text_chunks):
 def load_vectorstore():
     with open("vectorstore.pkl", "rb") as f:
         vectorstore = pickle.load(f)
-    
     return vectorstore
 
 def get_conversation_chain(vectorstore):

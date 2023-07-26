@@ -27,6 +27,7 @@ import re
 from bs4 import BeautifulSoup
 import csv
 from aidvi_functions import process_file, get_conversation_chain, get_text_chunks, load_vectorstore, get_vectorstore
+import pickle
 
 #the app
 
@@ -140,22 +141,26 @@ def get_answer():
     directory_path = data["directory_path"]
     question = data["question"]
     response_data = {}
-
-    result = ""
-    # Iterate over all files in the directory and its subdirectories
-    for root, dirs, files in os.walk(directory_path):
-        for file_name in files:
-            file_path = os.path.join(root, file_name)
-            try:
-                abdo = process_file(file_path)
-                result += abdo
-            except PermissionError as e:
-                print(f"Permission error: {e} - Skipping file: {file_path}")
-
-    chunks = get_text_chunks(result)
-    # sore chunks o ebadihom
-    get_vectorstore(chunks)
-    vectorstore = load_vectorstore()
+    # Load the vectorstore if available or create a new one
+    if os.path.exists("vectorstore.pkl"):
+        with open("vectorstore.pkl", "rb") as f:
+            vectorstore = pickle.load(f)
+    else:
+        result = ""
+        # Iterate over all files in the directory and its subdirectories
+        for root, dirs, files in os.walk(directory_path):
+            for file_name in files:
+                file_path = os.path.join(root, file_name)
+                try:
+                    abdo = process_file(file_path)
+                    result += abdo
+                except PermissionError as e:
+                    print(f"Permission error: {e} - Skipping file: {file_path}")
+        # Get chunks and create vectorstore
+        chunks = get_text_chunks(result)
+        get_vectorstore(chunks)
+        vectorstore = load_vectorstore()
+        # Store the vectorstore in the session
     # sawb snsla
     conversation_chain = get_conversation_chain(vectorstore)
 
