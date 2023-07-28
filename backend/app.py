@@ -28,6 +28,7 @@ from bs4 import BeautifulSoup
 import csv
 from aidvi_functions import process_file, get_conversation_chain, get_text_chunks, load_vectorstore, get_vectorstore
 import pickle
+from werkzeug.utils import secure_filename
 
 #the app
 
@@ -37,6 +38,9 @@ app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config.from_object(ApplicationConfig)
 
+
+# Allow only specific file types (PDF, DOCX, CSV in this case)
+ALLOWED_EXTENSIONS = {'pdf', 'docx', 'csv'}
 bcrypt = Bcrypt(app)
 CORS(app, supports_credentials=True)
 server_session = Session(app)
@@ -47,6 +51,9 @@ with app.app_context():
     db.create_all()
 
 #routes
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 #login
 
@@ -86,6 +93,10 @@ def register_User():
     db.session.add(new_User)
     db.session.commit()
 
+    # Create a folder for the new user with their ID as the folder name
+    user_folder_path = os.path.join("./files", str(new_User.id))
+    os.makedirs(user_folder_path)
+
     session["user_id"] = new_User.id
 
     return jsonify({
@@ -120,12 +131,58 @@ def logout_user():
     #some thing to delete the sessions
     return "200"
 
+@app.route('/create_bot', methods=['POST'])
+def create_bot():
+    # Get the data sent from the frontend
+    data = request.json
+
+    # Extract information from the data
+    botname = data.get('botname')
+    botdescription = data.get('botdescription')
+    botfirstmessage = data.get('botfirstmessage')
+    questions = data.get('questions')
+
+    # Do something with the extracted data (e.g., create the bot)
+
+    # Handle file uploads
+    files = request.files.getlist('file')
+    file_paths = []
+
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
+            file_paths.append(file_path)
+
+    # You can now use the file_paths list to access the stored files
+
+    # Return a response indicating success
+    return jsonify({'message': 'Bot created successfully!', 'file_paths': file_paths})
+
 @app.route('/get_userbot', methods=['POST'])
 def get_bot_by_user_id():
     data = request.json
-    user_id = data['user_id']
+    user_id = session.get("user_id")
     bot_id = data['bot_id']
     directory_path = './files/' + user_id + '/' + bot_id
+    # Load the vectorstore if available or create a new one
+    if not os.path.exists(directory_path+"/vectorstore.pkl"):
+        result = ""
+        # Iterate over all files in the directory and its subdirectories
+        for root, dirs, files in os.walk(directory_path):
+            for file_name in files:
+                file_path = os.path.join(root, file_name)
+                try:
+                    abdo = process_file(file_path)
+                    result += abdo
+                except PermissionError as e:
+                    print(f"Permission error: {e} - Skipping file: {file_path}")
+        # Get chunks and create vectorstore
+        chunks = get_text_chunks(result)
+        get_vectorstore(chunks, directory_path)
+        vectorstore = load_vectorstore(directory_path)
+        # Store the vectorstore in the session
     #Include the conversation_chain in the response
     response_data = {
         "path": directory_path,
@@ -142,42 +199,27 @@ def get_answer():
     question = data["question"]
     response_data = {}
     # Load the vectorstore if available or create a new one
-    if os.path.exists("vectorstore.pkl"):
-        with open("vectorstore.pkl", "rb") as f:
+    if os.path.exists(directory_path+"/vectorstore.pkl"):
+        with open(directory_path+"/vectorstore.pkl", "rb") as f:
             vectorstore = pickle.load(f)
-    else:
-        result = ""
-        # Iterate over all files in the directory and its subdirectories
-        for root, dirs, files in os.walk(directory_path):
-            for file_name in files:
-                file_path = os.path.join(root, file_name)
-                try:
-                    abdo = process_file(file_path)
-                    result += abdo
-                except PermissionError as e:
-                    print(f"Permission error: {e} - Skipping file: {file_path}")
-        # Get chunks and create vectorstore
-        chunks = get_text_chunks(result)
-        get_vectorstore(chunks)
-        vectorstore = load_vectorstore()
-        # Store the vectorstore in the session
-    # sawb snsla
-    conversation_chain = get_conversation_chain(vectorstore)
+        # sawb snsla
+        conversation_chain = get_conversation_chain(vectorstore)
 
-    if question.strip():
-        response = conversation_chain({'question': question})
-        chat_history = response['chat_history']
+        if question.strip():
+            response = conversation_chain({'question': question})
+            chat_history = response['chat_history']
 
-        # Retrieve the bot's response from the chat history
-        bot_response = chat_history[-1].content if chat_history else "Error: Bot response not found."
+            # Retrieve the bot's response from the chat history
+            bot_response = chat_history[-1].content if chat_history else "Error: Bot response not found."
 
-        # Add the bot's response to the response_data dictionary
-        response_data['response'] = bot_response
-        print(response_data)
-    else:
-        print("didn't enter")
+            # Add the bot's response to the response_data dictionary
+            response_data['response'] = bot_response
+            print(response_data)
+        else:
+            print("didn't enter")
 
-    return jsonify(response_data)
+        return jsonify(response_data)
+    return "Error starting the bot"
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -19,7 +19,8 @@ from bs4 import BeautifulSoup
 import csv
 
 load_dotenv()
-openai_api_key=os.environ["OPEN_AI_API_KEY"]
+#openai_api_key="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"
+openai_api_key="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-hhhhh"
 conversation=""
 def pdf__data(pdffile):
     text = ""
@@ -78,14 +79,14 @@ def get_text_chunks(text):
     return chunks
 
 
-def get_vectorstore(text_chunks):
+def get_vectorstore(text_chunks, directory_path):
     embeddings = OpenAIEmbeddings(openai_api_key=openai_api_key)
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     print("All good in vectores")
-    with open("vectorstore.pkl", "wb") as f:
+    with open(directory_path+"/vectorstore.pkl", "wb") as f:
         pickle.dump(vectorstore, f)
-def load_vectorstore():
-    with open("vectorstore.pkl", "rb") as f:
+def load_vectorstore(directory_path):
+    with open(directory_path+"/vectorstore.pkl", "rb") as f:
         vectorstore = pickle.load(f)
     return vectorstore
 
