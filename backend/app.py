@@ -4,12 +4,11 @@ from flask_bcrypt import Bcrypt
 from flask_session import Session
 from config import ApplicationConfig
 from flask_cors import CORS, cross_origin
-from models import db, User
+from models import db, User, Bots, Tokens
 
 #import langchain stuff
 import streamlit as st
 from dotenv import load_dotenv
-from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import OpenAIEmbeddings, HuggingFaceInstructEmbeddings
 from langchain.vectorstores import FAISS
@@ -26,18 +25,27 @@ import json
 import re
 from bs4 import BeautifulSoup
 import csv
-from aidvi_functions import process_file, get_conversation_chain, get_text_chunks, load_vectorstore, get_vectorstore
+from aidvi_functions import process_file, get_conversation_chain, get_text_chunks, load_vectorstore, get_vectorstore, docs_data, csv_data
 import pickle
 from werkzeug.utils import secure_filename
 
-#the app
+#import files stuff
+import docx
+import csv
+import fitz
+from nltk.tokenize import word_tokenize
+import stripe
 
+#the app
+load_dotenv()
 #login
 app = Flask(__name__)
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config.from_object(ApplicationConfig)
-
+# Add this line to define the UPLOAD_FOLDER
+UPLOAD_FOLDER = './files'
+stripe.api_key = os.getenv('STRIPE_API_KEY')
 
 # Allow only specific file types (PDF, DOCX, CSV in this case)
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'csv'}
@@ -50,12 +58,70 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+# Function to calculate total tokens in text
+def pdf__data(pdf_path):
+    text = ""
+    # Open the PDF file
+    doc = fitz.open(pdf_path)
+
+    # Iterate through all pages
+    for page_num in range(doc.page_count):
+        # Get the page
+        page = doc.load_page(page_num)
+
+        # Extract text from the page
+        page_text = page.get_text("text")
+        text += page_text
+
+    # Close the PDF file
+    doc.close()
+
+    return text
+
+def count_tokens(text):
+    tokens = word_tokenize(text)
+    return len(tokens)
+
+
+
 #routes
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 #login
+
+@app.route('/config')
+def config():
+    return jsonify({
+        "publishablekey" : os.getenv('STRIPE_API_KEY')
+    })
+
+@app.route('/create-payment-intent', methods=['POST'])
+def create_payment_intent():
+    data=request.json
+    #email = data['email']
+    #price = data['price']
+
+    # if not email or not price:
+    #     return "You need to send an email, and know the price", 400
+
+    try:
+        paymentIntent = stripe.PaymentIntent.create(
+            amount=300,
+            currency = 'usd',
+            automatic_payment_method= {
+                'enabled' : True
+            }
+        )
+
+        return jsonify({
+            "client_secret":paymentIntent.client_secret
+        }), 200
+    except Exception as error:
+        return jsonify({
+            "message" : error
+        })
 
 @app.route('/@me')
 def get_current_user():
@@ -91,6 +157,9 @@ def register_User():
     hashed_pass = bcrypt.generate_password_hash(password)
     new_User = User( first_name=first_name, last_name=last_name , address_u=address_u ,email=email, password=hashed_pass)
     db.session.add(new_User)
+    db.session.commit()
+    new_Token = Tokens(Num_Msg_T=0, Num_Str_T=0, PlanID=1, PersonID=new_User.id)
+    db.session.add(new_Token)
     db.session.commit()
 
     # Create a folder for the new user with their ID as the folder name
@@ -128,37 +197,100 @@ def login_user():
 
 @app.route('/logout', methods=['POST'])
 def logout_user():
-    #some thing to delete the sessions
-    return "200"
+    # Check if the user is logged in
+    if 'user_id' in session:
+        # Clear the session to log out the user
+        session.pop('user_id', None)
+        return jsonify({"msg": "Logged out successfully"}), 200
+    else:
+        return jsonify({"msg": "User is not logged in"}), 401
 
 @app.route('/create_bot', methods=['POST'])
 def create_bot():
     # Get the data sent from the frontend
-    data = request.json
-
+    data = request.form  # Use request.form to get the data from FormData
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
     # Extract information from the data
     botname = data.get('botname')
     botdescription = data.get('botdescription')
     botfirstmessage = data.get('botfirstmessage')
     questions = data.get('questions')
 
-    # Do something with the extracted data (e.g., create the bot)
+    # Retrieve the files from FormData
+    files = request.files.getlist('files[]')
+    user_folder_path = os.path.join(UPLOAD_FOLDER, str(user_id))
+    #get the tokens id based on the user id
+    token = Tokens.query.filter_by(PersonID=user_id).first()
+    
+    if token is not None:
+        token_id = token.TokenID
+    else:
+        return "error"
+    #add the bot
+    new_Bot = Bots(Name=botname, Description=botdescription, First_Message=botfirstmessage, Message_Suggestions=questions, TokenID=token_id)
+    db.session.add(new_Bot)
+    db.session.commit()
 
-    # Handle file uploads
-    files = request.files.getlist('file')
+    # Create a folder for the user if it doesn't exist
+    if not os.path.exists(user_folder_path):
+        os.makedirs(user_folder_path)
+
+    bot_folder_path = os.path.join(user_folder_path, new_Bot.BotsID)
+
+    # Create a folder for the bot
+    if not os.path.exists(bot_folder_path):
+        os.makedirs(bot_folder_path)
+
     file_paths = []
 
     for file in files:
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file_path = os.path.join(bot_folder_path, filename)
             file.save(file_path)
             file_paths.append(file_path)
 
     # You can now use the file_paths list to access the stored files
+    total_tokens = 0
+    # Process DOCX files
+    for filename in os.listdir(UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID):
+        if filename.endswith('.docx'):
+            docx_file_path = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID+'/'+filename
+            print(docx_file_path)
+            text_content = docs_data(docx_file_path)
+            total_tokens += count_tokens(text_content)
 
+    # Process PDF files
+    for filename in os.listdir(UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID):
+        if filename.endswith('.pdf'):
+            pdf_file_path = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID+'/'+filename
+            print(pdf_file_path)
+            text_content = pdf__data(pdf_file_path)
+            total_tokens += count_tokens(text_content)
+
+    # Process CSV files
+    for filename in os.listdir(UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID):
+        if filename.endswith('.csv'):
+            csv_file_path = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID+'/'+filename
+            print(docx_file_path)
+            #Assuming 'text_column' contains the text content in the CSV file
+            text_content = csv_data(csv_file_path, 'text_column')
+            total_tokens += count_tokens(text_content)
+
+    tokens = Tokens.query.filter_by(PersonID=user_id).first()
+
+    #check if the token not bigger than max tokens and some more tests
+
+    if tokens:
+        # Add the new total_tokens value to the existing Num_Str_T value
+        tokens.Num_Str_T += total_tokens
+        db.session.commit()
+    else:
+        return jsonify({"error": "Tokens not found for the user"}), 404
     # Return a response indicating success
-    return jsonify({'message': 'Bot created successfully!', 'file_paths': file_paths})
+    return jsonify({'message': 'Bot created successfully!', 'file_paths': "test"})
 
 @app.route('/get_userbot', methods=['POST'])
 def get_bot_by_user_id():

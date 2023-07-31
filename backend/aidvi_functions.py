@@ -19,8 +19,7 @@ from bs4 import BeautifulSoup
 import csv
 
 load_dotenv()
-#openai_api_key="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"
-openai_api_key="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-hhhhh"
+openai_api_key=os.getenv("OPEN_AI_API_KEY")
 conversation=""
 def pdf__data(pdffile):
     text = ""
