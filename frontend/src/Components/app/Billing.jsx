@@ -96,7 +96,7 @@ export default function Billing() {
                     <p className='text-md'>Starter</p>
                     <p className='text-3xl text-start flex gap-2 text-primary mt-5 font-bold'>Free</p>
                     <div className="mt-5 w-full">
-                      <button className='text-center bg-lightprimary text-white w-full py-2 rounded-md'>Subscribe</button>
+                      <button disabled className='text-center bg-gray-400 text-white w-full py-2 rounded-md'>Subscribe</button>
                     </div>
                     {/*what in plans */}
                     <div className="mt-5">
@@ -108,9 +108,9 @@ export default function Billing() {
                   </div>
                   <div className="border rounded-lg w-full p-5 gap-2">
                     <p className='text-md'>Essential</p>
-                    <p className='text-3xl text-start flex gap-2 text-primary mt-5 font-bold'>$30<p className='mt-auto text-lg'>/month</p> </p>
+                    <p className='text-3xl text-start flex gap-2 text-primary mt-5 font-bold'>$30{plan == 1 ? '0' : ''}<p className='mt-auto text-lg'>/{plan == 0 ? 'month' : 'year'}</p> </p>
                     <div className="mt-5 w-full">
-                      <button className='text-center bg-lightprimary text-white w-full py-2 rounded-md'>Subscribe</button>
+                      <a href='/subscription/2' className='text-center bg-lightprimary hover:bg-primary text-white w-full py-2 rounded-md block'>Subscribe</a>
                     </div>
                     {/*what in plans */}
                     <div className="mt-5">
@@ -123,9 +123,9 @@ export default function Billing() {
                   </div>
                   <div className="border rounded-lg w-full p-5 gap-2">
                     <p className='text-md'>Pro</p>
-                    <p className='text-3xl text-start flex gap-2 text-primary mt-5 font-bold'>$100<p className='mt-auto text-lg'>/month</p> </p>
+                    <p className='text-3xl text-start flex gap-2 text-primary mt-5 font-bold'>$100{plan == 1 ? '0' : ''}<p className='mt-auto text-lg'>/{plan == 0 ? 'month' : 'year'}</p> </p>
                     <div className="mt-5 w-full">
-                      <button className='text-center bg-lightprimary text-white w-full py-2 rounded-md'>Subscribe</button>
+                      <a href='/subscription/3' className='text-center bg-lightprimary hover:bg-primary text-white w-full py-2 rounded-md block'>Subscribe</a>
                     </div>
                     {/*what in plans */}
                     <div className="mt-5">

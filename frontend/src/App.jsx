@@ -15,6 +15,7 @@ import Account from './Components/app/Account'
 import NewBots from './Components/app/bots/NewBot'
 import ChatBot from './Components/app/bots/ChatBot'
 import Error from './Components/404/Error'
+import Subscription from './Components/app/billing/Subscription'
 
 function App() {
   return (
@@ -28,6 +29,8 @@ function App() {
         <Route exact path="/app/billing" component={Billing} />
         <Route exact path="/app/bots/new" component={NewBots} />
         <Route exact path="/bot/:id" component={ChatBot} />
+        <Route exact path="/subscription/:id" component={Subscription} />
+
 
         {/*404 page */}
         <Route exact path="/404" component={Error} />

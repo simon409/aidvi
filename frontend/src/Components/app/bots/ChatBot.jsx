@@ -15,7 +15,7 @@ export default function ChatBot() {
   useEffect(() => {
     try {
       const data = {
-        user_id: '420499f58e0f43669acdd524e728ff31', // Replace with the actual user ID
+        user_id: 'b7e6b8bac3284a369700eb29aaf51ad7', // Replace with the actual user ID
         bot_id: id, // Replace with the actual bot ID
       };
 

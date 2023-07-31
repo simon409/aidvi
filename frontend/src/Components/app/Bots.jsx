@@ -29,7 +29,7 @@ export default function Bots() {
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3">
                   <div className="border rounded-tl-md rounded-bl-md p-5 flex flex-col gap-2">
                     <p className='text-xl'>Bots</p>
-                    <p className='text-xl flex gap-2 text-secondary font-bold'>1<p className='text-sm mt-[7px] text-lightprimary font-normal'>/6</p></p>
+                    <p className='text-xl flex gap-2 text-secondary font-bold'>1<p className='text-sm mt-[7px] text-lightprimary font-normal'>/1</p></p>
                   </div>
                   <div className="border p-5 flex flex-col gap-2">
                     <p className='text-lg'>Storage tokens</p>

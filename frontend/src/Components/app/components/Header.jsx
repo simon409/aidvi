@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { BiMenuAltLeft } from 'react-icons/bi'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min'
+import Cookies from 'js-cookie'
 
 export default function Header({ setopennavmob, opennavmob }) {
-  const [openmenu, setopenmenu] = useState(false)
+  const [openmenu, setopenmenu] = useState(true)
   const History = useHistory()
   const [User, setUser] = useState({})
 
@@ -32,6 +33,7 @@ export default function Header({ setopennavmob, opennavmob }) {
     const HandelLogout = () => {
       fetch('http://localhost:5000/logout', {
         method: 'POST',
+        credentials: "include" // Include credentials (cookies)
       })
         .then((response) => {
           if (response.ok) {
