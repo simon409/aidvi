@@ -110,7 +110,7 @@ export default function Billing() {
                     <p className='text-md'>Essential</p>
                     <p className='text-3xl text-start flex gap-2 text-primary mt-5 font-bold'>$30{plan == 1 ? '0' : ''}<p className='mt-auto text-lg'>/{plan == 0 ? 'month' : 'year'}</p> </p>
                     <div className="mt-5 w-full">
-                      <a href='/subscription/2' className='text-center bg-lightprimary hover:bg-primary text-white w-full py-2 rounded-md block'>Subscribe</a>
+                      <a href={`/subscription/2?repeativity=${plan==0 ? 'monthly' : 'annualy'}`} className='text-center bg-lightprimary hover:bg-primary text-white w-full py-2 rounded-md block'>Subscribe</a>
                     </div>
                     {/*what in plans */}
                     <div className="mt-5">
@@ -125,7 +125,7 @@ export default function Billing() {
                     <p className='text-md'>Pro</p>
                     <p className='text-3xl text-start flex gap-2 text-primary mt-5 font-bold'>$100{plan == 1 ? '0' : ''}<p className='mt-auto text-lg'>/{plan == 0 ? 'month' : 'year'}</p> </p>
                     <div className="mt-5 w-full">
-                      <a href='/subscription/3' className='text-center bg-lightprimary hover:bg-primary text-white w-full py-2 rounded-md block'>Subscribe</a>
+                      <a href={`/subscription/3?repeativity=${plan==0 ? 'monthly' : 'annualy'}`} className='text-center bg-lightprimary hover:bg-primary text-white w-full py-2 rounded-md block'>Subscribe</a>
                     </div>
                     {/*what in plans */}
                     <div className="mt-5">

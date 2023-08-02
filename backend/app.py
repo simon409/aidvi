@@ -45,7 +45,7 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 app.config.from_object(ApplicationConfig)
 # Add this line to define the UPLOAD_FOLDER
 UPLOAD_FOLDER = './files'
-stripe.api_key = os.getenv('STRIPE_API_KEY')
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 # Allow only specific file types (PDF, DOCX, CSV in this case)
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'csv'}
@@ -90,38 +90,79 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 #login
+@app.route('/create_subscription', methods=['POST'])
+def create_subscription():
+    user_id = session.get("user_id")
 
-@app.route('/config')
-def config():
-    return jsonify({
-        "publishablekey" : os.getenv('STRIPE_API_KEY')
-    })
-
-@app.route('/create-payment-intent', methods=['POST'])
-def create_payment_intent():
-    data=request.json
-    #email = data['email']
-    #price = data['price']
-
-    # if not email or not price:
-    #     return "You need to send an email, and know the price", 400
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    user = User.query.filter_by(id=user_id).first()
 
     try:
-        paymentIntent = stripe.PaymentIntent.create(
-            amount=300,
-            currency = 'usd',
-            automatic_payment_method= {
-                'enabled' : True
+        # Step 3: Create a subscription plan in Stripe (e.g., $10/month)
+        payment_method_id = request.json['payment_method_id']
+        repeativity = request.json['repeativity']
+        amount = request.json['amount']
+        product_name = ""
+
+        if(amount == 3000):
+            if(repeativity == "month"):
+                product_name = "Aidvi subscription (monthly subscription - 30$)"
+            else:
+                product_name = "Aidvi subscription (yearly subscription - 300$)"
+        else:
+            if(repeativity == "month"):
+                product_name = "Aidvi subscription (monthly subscription - 100$)"
+            else:
+                product_name = "Aidvi subscription (yearly subscription - 1000$)"
+        plan = stripe.Plan.create(
+            amount=amount,
+            currency='usd',
+            interval=repeativity,
+            product={
+                'name': product_name,
             }
         )
 
+        # Step 4: Collect payment information on the frontend using Stripe Elements or PaymentIntents API.
+        # For simplicity, let's assume the payment method ID is provided in the request
+        
+        email = user.email
+        full_name = user.first_name + " "+ user.last_name
+
+        # Step 5: Create a customer in Stripe (with payment information)
+        customer = stripe.Customer.create(
+            email=user.email,
+            name=user.first_name + " " + user.last_name,
+            payment_method=payment_method_id,  # Use payment_method parameter instead of source
+            invoice_settings={
+                'default_payment_method': payment_method_id,  # Set default payment method for future invoices
+            },
+            metadata={
+                "additional_info": "Any additional metadata you want to store"
+            }
+        )
+
+        # Step 6: Create a subscription for the customer
+        subscription = stripe.Subscription.create(
+            customer=customer.id,
+            items=[
+                {
+                    'plan': plan.id,
+                },
+            ],
+            default_payment_method=payment_method_id,  # Set the default payment method for the subscription
+            expand=['latest_invoice.payment_intent']  # Expand the payment_intent object within the latest_invoice
+        )
+
+        # Get the client secret from the subscription and return it to the frontend
+        return jsonify({'message': "nice",'client_secret': subscription.latest_invoice.payment_intent.client_secret, "subscription_id":subscription.id}), 200
+
+    except Exception as e:
+        print(str(e))
         return jsonify({
-            "client_secret":paymentIntent.client_secret
-        }), 200
-    except Exception as error:
-        return jsonify({
-            "message" : error
-        })
+            "message" : str(e)
+        }), 500
 
 @app.route('/@me')
 def get_current_user():
