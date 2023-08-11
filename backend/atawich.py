@@ -93,7 +93,31 @@ def ikhan():
         session['Max_data_S'] = infos['Max_data_S']
     else:
         return jsonify({'msg': 'We could not find any infos'})
+def UPmail():
+    user_id = session.get("user_id")
+    data = request.json
+    mail = data['mail']
+    cursor = mysql.connection.cursor(dictionary=True) 
+    cursor.execute('UPDATE Persons SET Email_P = %s WHERE PersonID = %s', (mail, user_id))
+    mysql.connection.commit()
+    cursor.close()    
 
+def UPPassword():
+    user_id = session.get("user_id")
+    data = request.json
+    password = data['password']
+    cursor = mysql.connection.cursor(dictionary=True) 
+    cursor.execute('UPDATE Persons SET Password = %s WHERE PersonID = %s', (password, user_id))
+    mysql.connection.commit()
+    cursor.close()  
+
+def delete():
+    user_id = session.get("user_id")
+    cursor = mysql.connection.cursor(dictionary=True) 
+    cursor.execute('DELETE FROM Persons WHERE PersonID = %s', (user_id,))
+    mysql.connection.commit()
+    cursor.close()
+    
 
 if __name__ == '__main__':  # Set a secret key for session management
     app.run(debug=True)
