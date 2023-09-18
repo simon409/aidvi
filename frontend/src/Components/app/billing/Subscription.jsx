@@ -4,7 +4,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import CheckoutForm from './CheckoutForm';
 import { useParams, useLocation } from 'react-router-dom/cjs/react-router-dom.min';
 
-const stripePromise = loadStripe('pk_test_51NZrjpCW3Jn6BZO0HcDhbvIUdSxhifEzCqBSa0kqG0stBb9JFjVdl313vYcfOX5wPoT7dkp1hFxSKXlTiEcbg0mb00mwt8R0sl');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_API_KEY);
 
 export default function Subscription() {
   const {id} = useParams()

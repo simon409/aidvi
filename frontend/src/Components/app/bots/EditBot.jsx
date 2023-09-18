@@ -1,24 +1,27 @@
-import React, { useState } from 'react'
-import SideBar from '../components/SideBar'
-import Header from '../components/Header'
+import React, {useEffect, useState} from 'react'
+import {useParams} from 'react-router-dom/cjs/react-router-dom'
+import SideBar from '../components/SideBar';
+import Header from '../components/Header';
 import { BsPlus } from 'react-icons/bs'
 import { AiOutlineClose } from 'react-icons/ai'
 import { FileUploader } from "react-drag-drop-files"
 
-export default function NewBots() {
-  const [opennavmob, setopennavmob] = useState(false);
-  const [success, setsuccess] = useState(false);
-  const [openmessage, setopenmessage] = useState(false);
-  const [botname, setbotname] = useState('');
-  const [botdescription, setbotdescription] = useState('');
-  const [botfirstmessage, setbotfirstmessage] = useState('');
-  const [files, setFiles] = useState([]);
-  const fileTypes = ["PDF", "DOCX", "CSV"];
-  const [questions, setQuestions] = useState('');
 
-  const handleQuestionaeraChange = (event) => {
-    setQuestions(event.target.value);
-  };
+export default function EditBot() {
+    const {id} = useParams()
+    const [opennavmob, setopennavmob] = useState(false);
+    const [success, setsuccess] = useState(false);
+    const [openmessage, setopenmessage] = useState(false);
+    const [botname, setbotname] = useState('');
+    const [botdescription, setbotdescription] = useState('');
+    const [botfirstmessage, setbotfirstmessage] = useState('');
+    const [files, setFiles] = useState([]);
+    const fileTypes = ["PDF", "DOCX", "CSV"];
+    const [questions, setQuestions] = useState('');
+
+    const handleQuestionaeraChange = (event) => {
+        setQuestions(event.target.value);
+    };
 
   const handleChange = (selectedFiles) => {
     // Append the selectedFiles to the existing files state
@@ -114,8 +117,8 @@ export default function NewBots() {
         <div className="h-[7%]"><Header setopennavmob={setopennavmob} opennavmob={opennavmob} /></div>
         <div className="h-[93%]">
           <div className="lg:container w-full flex flex-col px-5">
-            <h3 className='flex w-[130px] justify-between'><a href='/app/bots'>Bots</a> <p>{'>'}</p> <p>New bot</p></h3>
-            <h2 className='text-3xl font-bold'>New bot</h2>
+            <h3 className='flex w-[450px] justify-between'><a href='/app/bots'>Bots</a> <p className='inline'>{'>'}</p> <p className='inline'>Editbot ('{id}')</p></h3>
+            <h2 className='text-3xl font-bold'>Edit bot</h2>
             <div className="mt-10 w-[500px] flex flex-col gap-3">
               <div className="flex flex-col gap-1">
                 <p>Bot name</p>

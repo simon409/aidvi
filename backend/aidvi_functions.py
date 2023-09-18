@@ -17,17 +17,17 @@ import re
 import pickle
 from bs4 import BeautifulSoup
 import csv
+import fitz
 
 load_dotenv()
 openai_api_key=os.getenv("OPEN_AI_API_KEY")
 conversation=""
 def pdf__data(pdffile):
     text = ""
-    #Read pdffile then stock everything in text 
-    for pdf in pdffile:
-        pdf_reader = PdfReader(pdf)
-        for page in pdf_reader.pages:
-            text += page.extract_text()
+    doc = fitz.open(pdffile)
+    for page in doc:
+        text += page.get_text()
+    doc.close()
     return text
 
 

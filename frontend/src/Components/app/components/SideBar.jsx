@@ -1,13 +1,16 @@
 import React from 'react'
 import { BsFillChatLeftDotsFill, BsFillPersonFill } from 'react-icons/bs'
 import { RiBankCardFill } from 'react-icons/ri'
+import LOGO from '../../../assets/logo aidvi.png'
 
 export default function SideBar() {
   return (
     <div className='w-full h-full flex flex-col justify-between relative'>
       <div>
         <div className='p-4'>
-          <a href="/" className='text-[25px] font-bold text-primary'>✨aidvi</a>
+          <a href="/" className='h-[50px]'>
+            <img src={LOGO} alt="" className='h-[60px]'/>
+          </a>
         </div>
         <div className="p-4">
           <ul className='list-none flex flex-col gap-2'>
