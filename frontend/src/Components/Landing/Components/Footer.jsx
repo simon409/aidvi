@@ -1,4 +1,5 @@
 import React from 'react'
+import LOGO from '../../../assets/logo aidvi.png'
 import {AiFillInstagram, AiFillYoutube, AiFillTwitterCircle} from 'react-icons/ai'
 
 export default function Footer() {
@@ -7,7 +8,9 @@ export default function Footer() {
             <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-1 gap-5">
                 <div className="aidvi">
                     <div className='my-auto'>
-                        <p className='text-[30px] font-bold text-primary'>✨aidvi</p>
+                        <p className='text-[30px] font-bold text-primary'>
+                            <img src={LOGO} className='h-[40px]'/>
+                        </p>
                         <p className='text-[18px] mt-3'>
                             Create and share your custom AI assistant trained on your specific data, driving meaningful and profitable interactions with your team members and customers.
                         </p>

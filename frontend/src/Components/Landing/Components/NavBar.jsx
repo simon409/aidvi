@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import {AiOutlineMenu, AiOutlineClose} from 'react-icons/ai'
+import LOGO from '../../../assets/logo aidvi.png'
 
 function MenuMob({MenuOpen, setMenuOpen}){
     return(
@@ -24,9 +25,11 @@ export default function NavBar() {
     const [MenuOpen, setMenuOpen] = useState(false)
   return (
     <div className='w-full h-[60px] bg-lightblue flex'>
-        <div className="lg:container w-full flex justify-between p-2">
-            <div className='my-auto'>
-                <a href="/" className='text-[30px] font-bold pl-1 text-primary'>✨aidvi</a>
+        <div className="lg:container w-full h-full flex justify-between p-2">
+            <div className='my-auto h-full'>
+                <a href="/" className='text-primary'>
+                    <img src={LOGO} className='h-full' />
+                </a>
             </div>
             <div className='my-auto'>
                 <ul className='lg:flex gap-8 hidden'>

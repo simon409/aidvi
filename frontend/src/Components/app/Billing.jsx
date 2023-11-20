@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import SideBar from './components/SideBar'
 import Header from './components/Header'
 import { AiOutlineClose } from 'react-icons/ai'
@@ -8,7 +8,25 @@ import { AiFillMessage, AiOutlineCheck } from 'react-icons/ai'
 
 export default function Billing() {
   const [opennavmob, setopennavmob] = useState(false)
+  const [PlanInfos, setPlanInfos] = useState({})
   const [plan, setplan] = useState(0)
+
+
+  useEffect(() => {
+    fetch(import.meta.env.VITE_API_LINK+'/get_plan', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include'
+    })
+      .then((response) => response.json())
+      .then((data)=>{
+        setPlanInfos(data)
+      })
+  }, [])
+  
+
   return (
     <div className='flex w-full h-screen'>
       <div className={`lg:w-[20%] w-[300px] h-screen lg:relative fixed z-50 bg-lightblue ${opennavmob ? 'lg:-translate-x-0 -translate-x-0' : 'lg:-translate-x-0 -translate-x-full'} transition-all ease-in-out duration-200`}>
@@ -28,14 +46,17 @@ export default function Billing() {
             <div className="flex flex-col mt-10">
               <h3 className='font-bold'>Current plan</h3>
               <div className='mt-3 w-full'>
+                {
+                    PlanInfos !== null ? (
                 <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-5 gap-3">
-                  <div className="border rounded-md p-5 flex gap-2">
+                  
+                      <div className="border rounded-md p-5 flex gap-2">
                     <div className="w-[20%] my-auto text-2xl">
                       <BsPersonCircle />
                     </div>
                     <div className="w-[80%]">
                       <p className='text-md'>Current plan</p>
-                      <p className='text-xl flex gap-2 text-secondary font-bold'>Free</p>
+                      <p className='text-xl flex gap-2 text-secondary font-bold'>{PlanInfos.type_plan}</p>
                     </div>
                   </div>
                   <div className="border rounded-md p-5 flex gap-2">
@@ -44,7 +65,7 @@ export default function Billing() {
                     </div>
                     <div className="w-[80%]">
                       <p className='text-md'>Max chatbots</p>
-                      <p className='text-xl flex gap-2 text-secondary font-bold'>1</p>
+                      <p className='text-xl flex gap-2 text-secondary font-bold'>{PlanInfos.max_bot}</p>
                     </div>
                   </div>
                   <div className="border rounded-md p-5 flex gap-2">
@@ -53,7 +74,7 @@ export default function Billing() {
                     </div>
                     <div className="w-[80%]">
                       <p className='text-md'>Data sources</p>
-                      <p className='text-xl flex gap-2 text-secondary font-bold'>1</p>
+                      <p className='text-xl flex gap-2 text-secondary font-bold'>{PlanInfos.max_data_src}</p>
                     </div>
                   </div>
                   <div className="border rounded-md p-5 flex gap-2">
@@ -62,7 +83,15 @@ export default function Billing() {
                     </div>
                     <div className="w-[80%]">
                       <p className='text-md'>Storage tokens</p>
-                      <p className='text-xl flex gap-2 text-secondary font-bold'>600,000</p>
+                      <p className='text-xl flex gap-2 text-secondary font-bold'>
+                      {typeof PlanInfos.max_stg_t === 'number' ? (
+                        <p className='text-xl flex gap-2 text-secondary font-bold'>
+                          {PlanInfos.max_stg_t.toLocaleString()}
+                        </p>
+                      ) : (
+                        <p className='text-xl text-secondary'>Invalid storage token value</p>
+                      )}
+                      </p>
                     </div>
                   </div>
                   <div className="border rounded-md p-5 flex gap-2">
@@ -71,10 +100,23 @@ export default function Billing() {
                     </div>
                     <div className="w-[80%]">
                       <p className='text-md'>Message tokens</p>
-                      <p className='text-xl flex gap-2 text-secondary font-bold'>80,000</p>
+                      <p className='text-xl flex gap-2 text-secondary font-bold'>
+                      {typeof PlanInfos.max_msg_t === 'number' ? (
+                        <p className='text-xl flex gap-2 text-secondary font-bold'>
+                          {PlanInfos.max_msg_t.toLocaleString()}
+                        </p>
+                      ) : (
+                        <p className='text-xl text-secondary'>Invalid storage token value</p>
+                      )}  
+                      </p>
                     </div>
                   </div>
+                  
                 </div>
+                ) : (
+                    <>Loading infos</>
+                  )
+                }
               </div>
             </div>
             <div className="flex flex-col mt-10">

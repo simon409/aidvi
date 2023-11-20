@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import Micro from '../../assets/microsoft.svg'
 import Decor from '../../assets/decor.jpg'
 import { Link, useHistory } from 'react-router-dom/cjs/react-router-dom.min'
+import LOGOWhite from '../../assets/logowhite.png'
+import LOGO from '../../assets/logo aidvi.png'
 
 export default function Login() {
     const [email, setmail] = useState('')
@@ -25,13 +27,27 @@ export default function Login() {
     };
 
     useEffect(() => {
+        const listener = event => {
+          if (event.code === "Enter" || event.code === "NumpadEnter") {
+            console.log("Enter key was pressed. Run your function.");
+            HandelLogin();
+          }
+        };
+        document.addEventListener("keydown", listener);
+        return () => {
+          document.removeEventListener("keydown", listener);
+        };
+    }, []);
+
+    useEffect(() => {
         setFilled( isValid && email.length != 0 && password.length != 0)
     }, [email, password])
     
 
     useEffect(() => {
         // Check login status
-        fetch('http://localhost:5000/@me', {
+
+        fetch(import.meta.env.VITE_API_LINK+'/@me', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,28 +69,27 @@ export default function Login() {
 
     const HandelLogin = () => {
         // Perform login API call and handle response
-
-        fetch('http://localhost:5000/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                
-            },
-            credentials: 'include',
-            body: JSON.stringify({ email, password }),
-        })
-            .then((response) => {
-                if (response.status === 200) {
-                    history.push('/app/bots');
-                }
-                else {
-                    alert("Invalide credientials")
-                }
+            fetch(import.meta.env.VITE_API_LINK+'/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    
+                },
+                credentials: 'include',
+                body: JSON.stringify({ email, password }),
             })
-            .catch((error) => {
-                console.error('Error:', error);
-                //setErrorMessage('An error occurred. Please try again.');
-            });
+                .then((response) => {
+                    if (response.status === 200) {
+                        history.push('/app/bots');
+                    }
+                    else {
+                        alert("Invalide credientials")
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    //setErrorMessage('An error occurred. Please try again.');
+                });
     }
     // Render login form if not logged in
     if (!loggedIn) {
@@ -82,7 +97,11 @@ export default function Login() {
             <div className='w-screen h-screen flex'>
                 <div className="lg:w-1/2 w-full h-full flex flex-col">
                     <div className='lg:mt-4 lg:ml-4 lg:relative absolute top-2 left-1/2 -translate-x-1/2'>
-                        <a href="/" className='text-[30px] font-normal text-primary'>✨aidvi</a>
+                        <div className='my-auto h-[50px]'>
+                            <a href="/" className='text-primary'>
+                                <img src={LOGO} className='h-full' />
+                            </a>
+                        </div>
                     </div>
                     <div className="flex m-auto lg:w-[516px] w-3/4 text-center">
                         <div id="form">
@@ -171,7 +190,9 @@ export default function Login() {
                         {/* Content */}
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white">
                             <div className='text-center w-fit '>
-                                <h1 className='text-white text-7xl'>✨aidvi</h1>
+                                <h1 className='text-white text-7xl'>
+                                    <img src={LOGOWhite} className='h-full' />
+                                </h1>
                                 <p className='text-[19px] mt-3'>Unlock the power of seamless communication and limitless knowledge with our mesmerizing chatbot, your digital companion for endless possibilities.</p>
                             </div>
                         </div>

@@ -5,13 +5,13 @@ import { useHistory } from 'react-router-dom/cjs/react-router-dom.min'
 import Cookies from 'js-cookie'
 
 export default function Header({ setopennavmob, opennavmob }) {
-  const [openmenu, setopenmenu] = useState(true)
+  const [openmenu, setopenmenu] = useState(false)
   const History = useHistory()
   const [User, setUser] = useState({})
 
   useEffect(() => {
     // Check login status
-    fetch('http://localhost:5000/@me', {
+    fetch(import.meta.env.VITE_API_LINK+'/@me', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +31,7 @@ export default function Header({ setopennavmob, opennavmob }) {
 
   const Menu = () => {
     const HandelLogout = () => {
-      fetch('http://localhost:5000/logout', {
+      fetch(import.meta.env.VITE_API_LINK+'/logout', {
         method: 'POST',
         credentials: "include" // Include credentials (cookies)
       })
@@ -60,7 +60,7 @@ export default function Header({ setopennavmob, opennavmob }) {
       <button className='text-3xl block lg:hidden' onClick={() => setopennavmob(true)}>
         <BiMenuAltLeft />
       </button>
-      <button className='ml-auto my-auto flex gap-3 text-lg'>
+      <button className='ml-auto my-auto flex gap-3 text-lg' onClick={()=>setopenmenu(!openmenu)}>
         <p className='my-auto hidden md:block lg:block'>{User.email}</p>
         <div className='my-auto p-2 bg-lightblue rounded-full'> <BsFillPersonFill /> </div>
       </button>

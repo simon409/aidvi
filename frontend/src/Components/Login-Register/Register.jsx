@@ -3,6 +3,8 @@ import Micro from '../../assets/microsoft.svg'
 import Decor from '../../assets/decor.jpg'
 import { Link } from 'react-router-dom/cjs/react-router-dom.min'
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min'
+import LOGO from '../../assets/logo aidvi.png'
+import LOGOWhite from '../../assets/logowhite.png'
 
 export default function Register() {
     const [firstName, setfirstName] = useState('')
@@ -16,6 +18,19 @@ export default function Register() {
 
     const [isValid, setIsValid] = useState(false);
     const [isFilled, setFilled] = useState(false);
+
+    useEffect(() => {
+        const listener = event => {
+          if (event.code === "Enter" || event.code === "NumpadEnter") {
+            console.log("Enter key was pressed. Run your function.");
+            HandelSignUp();
+          }
+        };
+        document.addEventListener("keydown", listener);
+        return () => {
+          document.removeEventListener("keydown", listener);
+        };
+    }, []);
 
     
 
@@ -41,7 +56,7 @@ export default function Register() {
             password : Pass,
         };
     
-        fetch('http://localhost:5000/register', {
+        fetch(import.meta.env.VITE_API_LINK+'/register', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -55,7 +70,13 @@ export default function Register() {
         <div className='w-screen h-screen flex'>
             <div className="lg:w-1/2 w-full h-full flex flex-col">
                 <div className='lg:mt-4 lg:ml-4 lg:relative absolute top-2 left-1/2 -translate-x-1/2'>
-                    <a href="/" className='text-[30px] font-normal text-primary'>✨aidvi</a>
+                    <a href="/" className='text-[30px] font-normal text-primary'>
+                        <div className='my-auto h-[50px]'>
+                            <a href="/" className='text-primary'>
+                                <img src={LOGO} className='h-full' />
+                            </a>
+                        </div>
+                    </a>
                 </div>
                 <div className="flex m-auto lg:w-[516px] w-3/4 text-center">
                     <div id="form">
@@ -169,7 +190,9 @@ export default function Register() {
                     {/* Content */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white">
                         <div className='text-center w-fit '>
-                            <h1 className='text-white text-7xl'>✨aidvi</h1>
+                            <h1 className='text-white text-7xl'>
+                                <img src={LOGOWhite} className='h-full' />
+                            </h1>
                             <p className='text-[19px] mt-3'>Unlock the power of seamless communication and limitless knowledge with our mesmerizing chatbot, your digital companion for endless possibilities.</p>
                         </div>
                     </div>

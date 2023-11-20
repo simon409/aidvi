@@ -24,7 +24,7 @@ const CheckoutForm = ({ id, repeativity, amount }) => {
         card: elements.getElement(CardElement),
       });
 
-      const response = await fetch('http://localhost:5000/create_subscription', {
+      const response = await fetch(import.meta.env.VITE_API_LINK+'/create_subscription', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

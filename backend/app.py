@@ -4,7 +4,7 @@ from flask_bcrypt import Bcrypt
 from flask_session import Session
 from config import ApplicationConfig
 from flask_cors import CORS, cross_origin
-from models import db, User, Bots, Tokens
+from models import db, User, Bots, Tokens, Subscription, generate_uml_diagram, Plans
 
 #import langchain stuff
 import streamlit as st
@@ -46,6 +46,8 @@ app.config.from_object(ApplicationConfig)
 # Add this line to define the UPLOAD_FOLDER
 UPLOAD_FOLDER = './files'
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+# This is your Stripe CLI webhook secret for testing your endpoint locally.
+endpoint_secret = 'whsec_6571f7f0be3b451ddb44a49f6e17fa6f3b7cc1cd96838c796d494d5df277c0f9'
 
 # Allow only specific file types (PDF, DOCX, CSV in this case)
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'csv'}
@@ -57,6 +59,10 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+# Generate the UML diagram
+# graph = generate_uml_diagram(app)
+# graph.write_png('./schema.png')
 
 # Function to calculate total tokens in text
 def pdf__data(pdf_path):
@@ -83,7 +89,18 @@ def count_tokens(text):
     return len(tokens)
 
 
+def get_customer_metadata(customer_id):
+    try:
+        # Fetch the customer object from Stripe
+        customer = stripe.Customer.retrieve(customer_id)
 
+        # Extract 'user_uuid' from the customer metadata
+        user_uuid = customer.get('metadata', {}).get('user_uuid')
+
+        return user_uuid
+    except stripe.error.StripeError as e:
+        print(f"Stripe Error: {e}")
+        return None
 #routes
 
 def allowed_file(filename):
@@ -139,7 +156,7 @@ def create_subscription():
                 'default_payment_method': payment_method_id,  # Set default payment method for future invoices
             },
             metadata={
-                "additional_info": "Any additional metadata you want to store"
+                'user_uuid': user.id
             }
         )
 
@@ -163,6 +180,80 @@ def create_subscription():
         return jsonify({
             "message" : str(e)
         }), 500
+
+@app.route('/webhook', methods=['POST'])
+def stripe_webhook():
+    payload = request.data
+
+    try:
+        # Verify the event by providing the Stripe endpoint secret
+        event = stripe.Webhook.construct_event(payload, request.headers.get('stripe-signature'), endpoint_secret)
+
+        # Handle different types of events
+        if event.type == 'invoice.paid':
+            # Your code to handle invoice payment here
+            print("Invoice is paid:", event.data.object.id)
+        elif event.type == 'customer.subscription.created':
+            # Your code to handle subscription creation here
+            subscription_id = event.data.object.id
+            customer_id = event.data.object.customer
+            user_uuid = get_customer_metadata(customer_id)
+            amount = event.data.object.plan.amount_decimal
+
+            print(subscription_id)
+            print(user_uuid)
+            
+            #print(event.data.object)
+            print(amount)
+
+            # Here, 'amount' represents the subscription price in cents.
+            # Use this value to determine the corresponding subscription plan in your application.
+
+            # Example code to get the user from your database based on the user_uuid
+            user = User.query.filter_by(id=user_uuid).first()
+            if user:
+                # Perform actions with the user (e.g., store the subscription ID in the database, send notifications, etc.)
+                print("New subscription created for user:", user.id)
+                new_subscription = Subscription(id=subscription_id, user_id=user_uuid)
+                db.session.add(new_subscription)
+                db.session.commit()
+
+                plan_id = 1
+                
+                # Determine the plan based on the subscription amount
+                if amount == "3000" or amount == "30000":
+                    # Plan 2 (3000 or 30000)
+                    plan_id = 2
+                    print(plan_id)
+                elif amount == "10000" or amount == "100000":
+                    # Plan 3 (10000 or 100000)
+                    plan_id = 3
+                    print(plan_id)
+                else:
+                    # Handle other plan amounts or raise an error if needed
+                    plan_id = None
+                    print(plan_id)
+
+                if plan_id is not None:
+                    # Store the plan ID in the database or perform other actions as needed
+                    # For example, if you have a 'Tokens' model:
+                    tokens = Tokens.query.filter_by(PersonID=user.id).first()
+                    tokens.PlanID = plan_id
+                    db.session.commit()
+
+            else:
+                print("User not found for UUID:", user_uuid)
+
+        elif event.type == 'customer.subscription.deleted':
+            # Your code to handle subscription cancellation here
+            print("Subscription canceled:", event.data.object.id)
+
+        return jsonify({'status': 'success'})
+
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+
 
 @app.route('/@me')
 def get_current_user():
@@ -253,6 +344,8 @@ def create_bot():
     user_id = session.get("user_id")
     if not user_id:
         return jsonify({"error": "Unauthorized"}), 401
+    
+    
     # Extract information from the data
     botname = data.get('botname')
     botdescription = data.get('botdescription')
@@ -264,101 +357,226 @@ def create_bot():
     user_folder_path = os.path.join(UPLOAD_FOLDER, str(user_id))
     #get the tokens id based on the user id
     token = Tokens.query.filter_by(PersonID=user_id).first()
+    #check if the user can still have more bots
+    bot_count = Bots.query.filter_by(TokenID=token.TokenID).count()
+
+    plan = Plans.query.filter_by(PlanID=token.PlanID).first()
+    max_bots = plan.Max_bot
     
     if token is not None:
         token_id = token.TokenID
     else:
         return "error"
-    #add the bot
-    new_Bot = Bots(Name=botname, Description=botdescription, First_Message=botfirstmessage, Message_Suggestions=questions, TokenID=token_id)
-    db.session.add(new_Bot)
-    db.session.commit()
-
-    # Create a folder for the user if it doesn't exist
-    if not os.path.exists(user_folder_path):
-        os.makedirs(user_folder_path)
-
-    bot_folder_path = os.path.join(user_folder_path, new_Bot.BotsID)
-
-    # Create a folder for the bot
-    if not os.path.exists(bot_folder_path):
-        os.makedirs(bot_folder_path)
-
-    file_paths = []
-
-    for file in files:
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(bot_folder_path, filename)
-            file.save(file_path)
-            file_paths.append(file_path)
-
-    # You can now use the file_paths list to access the stored files
-    total_tokens = 0
-    # Process DOCX files
-    for filename in os.listdir(UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID):
-        if filename.endswith('.docx'):
-            docx_file_path = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID+'/'+filename
-            print(docx_file_path)
-            text_content = docs_data(docx_file_path)
-            total_tokens += count_tokens(text_content)
-
-    # Process PDF files
-    for filename in os.listdir(UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID):
-        if filename.endswith('.pdf'):
-            pdf_file_path = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID+'/'+filename
-            print(pdf_file_path)
-            text_content = pdf__data(pdf_file_path)
-            total_tokens += count_tokens(text_content)
-
-    # Process CSV files
-    for filename in os.listdir(UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID):
-        if filename.endswith('.csv'):
-            csv_file_path = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID+'/'+filename
-            print(docx_file_path)
-            #Assuming 'text_column' contains the text content in the CSV file
-            text_content = csv_data(csv_file_path, 'text_column')
-            total_tokens += count_tokens(text_content)
-
-    tokens = Tokens.query.filter_by(PersonID=user_id).first()
-
-    #check if the token not bigger than max tokens and some more tests
-
-    if tokens:
-        # Add the new total_tokens value to the existing Num_Str_T value
-        tokens.Num_Str_T += total_tokens
+    if bot_count < max_bots:
+        #add the bot
+        new_Bot = Bots(Name=botname, Description=botdescription, First_Message=botfirstmessage, Message_Suggestions=questions, TokenID=token_id)
+        db.session.add(new_Bot)
         db.session.commit()
+
+        # Create a folder for the user if it doesn't exist
+        if not os.path.exists(user_folder_path):
+            os.makedirs(user_folder_path)
+
+        bot_folder_path = os.path.join(user_folder_path, new_Bot.BotsID)
+
+        # Create a folder for the bot
+        if not os.path.exists(bot_folder_path):
+            os.makedirs(bot_folder_path)
+
+        file_paths = []
+
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(bot_folder_path, filename)
+                file.save(file_path)
+                file_paths.append(file_path)
+
+        # You can now use the file_paths list to access the stored files
+        total_tokens = 0
+        # Process DOCX files
+        for filename in os.listdir(UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID):
+            if filename.endswith('.docx'):
+                docx_file_path = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID+'/'+filename
+                print(docx_file_path)
+                text_content = docs_data(docx_file_path)
+                total_tokens += count_tokens(text_content)
+
+        # Process PDF files
+        for filename in os.listdir(UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID):
+            if filename.endswith('.pdf'):
+                pdf_file_path = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID+'/'+filename
+                print(pdf_file_path)
+                text_content = pdf__data(pdf_file_path)
+                total_tokens += count_tokens(text_content)
+
+        # Process CSV files
+        for filename in os.listdir(UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID):
+            if filename.endswith('.csv'):
+                csv_file_path = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID+'/'+filename
+                print(docx_file_path)
+                #Assuming 'text_column' contains the text content in the CSV file
+                text_content = csv_data(csv_file_path, 'text_column')
+                total_tokens += count_tokens(text_content)
+
+        tokens = Tokens.query.filter_by(PersonID=user_id).first()
+
+        #check if the token not bigger than max tokens and some more tests
+        if tokens:
+            # Add the new total_tokens value to the existing Num_Str_T value
+            if tokens.Num_Str_T <= total_tokens:
+                #something
+                file_to_delete = UPLOAD_FOLDER+'/'+user_id+'/'+new_Bot.BotsID
+                #delete the created bot
+                # Replace 'bot_to_delete' with the actual bot instance you want to delete
+                bot_to_delete = session.query(Bots).filter_by(id=new_Bot.BotsID).first()
+
+                if bot_to_delete:
+                    session.delete(bot_to_delete)
+                    session.commit()
+                #delete the created folder
+                os.remove(bot_folder_to_delete)  # This deletes the bot's folder and its contents
+            else:
+                tokens.Num_Str_T += total_tokens
+                new_Bot.storage_tokens += total_tokens
+                db.session.commit()
+        else:
+            return jsonify({"message": "Tokens not found for the user"}), 404
+        # Return a response indicating success
+        return jsonify({'message': 'Bot created successfully!'})
     else:
-        return jsonify({"error": "Tokens not found for the user"}), 404
-    # Return a response indicating success
-    return jsonify({'message': 'Bot created successfully!', 'file_paths': "test"})
+        return jsonify({"message": "Bots maximum has been reached"}), 400
+
+
+@app.route('/get_bots')
+def get_bots():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    user = User.query.filter_by(id=user_id).first()
+    
+    #get tokens by user id
+    token = Tokens.query.filter_by(PersonID=user.id).first()
+    #get plan by token id
+    bots  = Bots.query.filter_by(TokenID=token.TokenID)
+
+    # Create a list to store bot details
+    bot_details = []
+
+    # Iterate through bots and extract required attributes
+    for bot in bots:
+        bot_detail = {
+            "id":bot.BotsID,
+            "name": bot.Name,
+            "created_at": bot.created_at,
+            "last_sync": bot.lastsync,
+            "storage_tokens": bot.storage_tokens 
+        }
+        bot_details.append(bot_detail)
+
+    # Return the list of bot details as JSON
+    return jsonify(bot_details)
+
+
+@app.route('/get_plan')
+def get_plan():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    user = User.query.filter_by(id=user_id).first()
+    
+    #get tokens by user id
+    token = Tokens.query.filter_by(PersonID=user.id).first()
+    #get plan by token id
+    plan = Plans.query.filter_by(PlanID=token.PlanID).first()
+
+    if plan:
+        return jsonify({
+            "plan_id":plan.PlanID,
+            "type_plan":plan.Type_P,
+            "max_data_src":plan.Max_data_src,
+            "max_stg_t":plan.Max_Stg_t,
+            "max_msg_t":plan.Max_Msg_t,
+            "max_bot":plan.Max_bot,
+        })
+    else:
+        return jsonify({
+            "error": 'plan not found'
+        }), 404
+@app.route('/get_tokens')
+def get_tokens():
+    user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    user = User.query.filter_by(id=user_id).first()
+    
+    #get tokens by user id
+    token = Tokens.query.filter_by(PersonID=user.id).first()
+
+    #here i should get bots by user count them
+    # Get the count of bots associated with the user
+    num_bots = Bots.query.filter_by(TokenID=token.TokenID).count()
+
+
+    if token:
+        return jsonify({
+            "token_id":token.TokenID,
+            "num_msg_t":token.Num_Msg_T,
+            "num_stg_t":token.Num_Str_T,
+            "bot_count":num_bots
+        })
+    else:
+        return jsonify({
+            "error": 'plan not found'
+        }), 404
 
 @app.route('/get_userbot', methods=['POST'])
 def get_bot_by_user_id():
     data = request.json
     user_id = session.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
     bot_id = data['bot_id']
     directory_path = './files/' + user_id + '/' + bot_id
-    # Load the vectorstore if available or create a new one
-    if not os.path.exists(directory_path+"/vectorstore.pkl"):
-        result = ""
+    # # Load the vectorstore if available or create a new one
+    if not os.path.exists(directory_path + "/vectorstore.pkl"):
+        accumulated_text = ""  # Initialize variable to accumulate text
+
         # Iterate over all files in the directory and its subdirectories
         for root, dirs, files in os.walk(directory_path):
             for file_name in files:
-                file_path = os.path.join(root, file_name)
+                file_path = os.path.join(root, file_name).replace("\\", "/")
+                print(file_path)
                 try:
                     abdo = process_file(file_path)
-                    result += abdo
+                    accumulated_text += abdo  # Accumulate text from each file
                 except PermissionError as e:
                     print(f"Permission error: {e} - Skipping file: {file_path}")
-        # Get chunks and create vectorstore
-        chunks = get_text_chunks(result)
+                except Exception as e:
+                    print(f"Error: {e} - Skipping file: {file_path}")
+
+        #Get chunks and create vectorstore from accumulated text
+        chunks = get_text_chunks(accumulated_text)
         get_vectorstore(chunks, directory_path)
-        vectorstore = load_vectorstore(directory_path)
-        # Store the vectorstore in the session
+
+
+    else:
+        print("test")
     #Include the conversation_chain in the response
+    #get tokens by user id
+    token = Tokens.query.filter_by(PersonID=user_id).first()
+    #get plan by token id
+    bot = Bots.query.filter_by(BotsID=bot_id).first()
     response_data = {
         "path": directory_path,
+        "name": bot.Name,
+        "description": bot.Description,
+        "first_message": bot.First_Message,
+        "message_suggestions": bot.Message_Suggestions
     }
 
     # Return the response_data as JSON response
@@ -371,26 +589,28 @@ def get_answer():
     directory_path = data["directory_path"]
     question = data["question"]
     response_data = {}
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
     # Load the vectorstore if available or create a new one
     if os.path.exists(directory_path+"/vectorstore.pkl"):
-        with open(directory_path+"/vectorstore.pkl", "rb") as f:
-            vectorstore = pickle.load(f)
+        vectorstore = load_vectorstore(directory_path)
         # sawb snsla
         conversation_chain = get_conversation_chain(vectorstore)
-
         if question.strip():
             response = conversation_chain({'question': question})
             chat_history = response['chat_history']
-
             # Retrieve the bot's response from the chat history
             bot_response = chat_history[-1].content if chat_history else "Error: Bot response not found."
-
             # Add the bot's response to the response_data dictionary
             response_data['response'] = bot_response
-            print(response_data)
+            #add to msg tokens
+            message_token_count = word_tokenize(question)
+            tokens = Tokens.query.filter_by(PersonID=user_id).first()
+            tokens.Num_Msg_T += len(message_token_count)
+            db.session.commit()
         else:
             print("didn't enter")
-
         return jsonify(response_data)
     return "Error starting the bot"
 

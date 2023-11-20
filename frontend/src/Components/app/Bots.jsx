@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import SideBar from './components/SideBar'
 import Header from './components/Header'
 import { BsPlus } from 'react-icons/bs'
@@ -6,6 +6,49 @@ import { AiOutlineClose } from 'react-icons/ai'
 
 export default function Bots() {
   const [opennavmob, setopennavmob] = useState(false)
+  const [tokeninfos, settokeninfos] = useState({})
+  const [planinfos, setplaninfos] = useState({})
+  const [bots, setBots] = useState([]);
+
+  useEffect(() => {
+    fetch(import.meta.env.VITE_API_LINK+'/get_tokens', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include'
+    })
+      .then((response) => response.json())
+      .then((data)=>{
+        settokeninfos(data)
+      })
+    fetch(import.meta.env.VITE_API_LINK+'/get_plan', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include'
+      })
+        .then((response) => response.json())
+        .then((data)=>{
+          setplaninfos(data)
+        })
+    fetch(import.meta.env.VITE_API_LINK+'/get_bots', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+      // Update the state with the fetched data
+      setBots(data)
+    })
+    .catch(error => {
+      console.error('Error fetching data:', error);
+    });
+  }, [])
   return (
     <div className='flex w-screen h-screen'>
       <div className={`lg:w-[20%] w-[300px] lg:relative fixed z-50 h-full bg-lightblue ${opennavmob ? 'lg:-translate-x-0 -translate-x-0' : 'lg:-translate-x-0 -translate-x-full'} transition-all ease-in-out duration-200`}>
@@ -29,15 +72,17 @@ export default function Bots() {
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3">
                   <div className="border rounded-tl-md rounded-bl-md p-5 flex flex-col gap-2">
                     <p className='text-xl'>Bots</p>
-                    <p className='text-xl flex gap-2 text-secondary font-bold'>1<p className='text-sm mt-[7px] text-lightprimary font-normal'>/1</p></p>
+                    <p className='text-xl flex gap-2 text-secondary font-bold'>{tokeninfos.bot_count}<p className='text-sm mt-[7px] text-lightprimary font-normal'>/{planinfos.max_bot}</p></p>
                   </div>
                   <div className="border p-5 flex flex-col gap-2">
                     <p className='text-lg'>Storage tokens</p>
-                    <p className='text-xl flex gap-2 text-secondary font-bold'>0<p className='text-sm mt-[7px] text-lightprimary font-normal'>/600000</p></p>
+                    <p className='text-xl flex gap-2 text-secondary font-bold'>{tokeninfos.num_stg_t}<p className='text-sm mt-[7px] text-lightprimary font-normal'>/
+                    {typeof planinfos.max_stg_t === 'number' ? (planinfos.max_stg_t.toLocaleString()) : (<p className='text-xl text-secondary'>Invalid storage token value</p>)}</p></p>
                   </div>
                   <div className="border rounded-tr-md rounded-br-md p-5 flex flex-col gap-2">
                     <p className='text-lg'>Message tokens</p>
-                    <p className='text-xl flex gap-2 text-secondary font-bold'>572<p className='text-sm mt-[7px] text-lightprimary font-normal'>/80000</p></p>
+                    <p className='text-xl flex gap-2 text-secondary font-bold'>{tokeninfos.num_msg_t}<p className='text-sm mt-[7px] text-lightprimary font-normal'>/
+                    {typeof planinfos.max_stg_t === 'number' ? (planinfos.max_msg_t.toLocaleString()) : (<p className='text-xl text-secondary'>Invalid message token value</p>)}</p></p>
                   </div>
                 </div>
               </div>
@@ -72,23 +117,27 @@ export default function Bots() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr class="bg-white border-b">
-                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-                          <a href="/bot/bot_id1" className='text-secondary font-bold'>testbot</a>
-                        </th>
-                        <td class="px-6 py-4">
-                          05/07/2023 10:13
-                        </td>
-                        <td class="px-6 py-4">
-                          Never
-                        </td>
-                        <td class="px-6 py-4">
-                          0
-                        </td>
-                        <td class="px-6 py-4">
-                          <a href="" className='text-secondary font-bold'>Edit</a>
-                        </td>
-                      </tr>
+                      { bots && 
+                        bots.map(bot => (
+                          <tr class="bg-white border-b">
+                            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                              <a href={`/bot/${bot.id}`} className='text-secondary font-bold'>{bot.name}</a>
+                            </th>
+                            <td class="px-6 py-4">
+                              {bot.created_at}
+                            </td>
+                            <td class="px-6 py-4">
+                              {bot.last_sync == null ? 'Never' : bot.last_sync}
+                            </td>
+                            <td class="px-6 py-4">
+                              {bot.storage_tokens}
+                            </td>
+                            <td class="px-6 py-4">
+                              <a href={`/bot/edit/${bot.id}`} className='text-secondary font-bold'>Edit</a>
+                            </td>
+                          </tr>
+                        ))
+                      }
                     </tbody>
                   </table>
                 </div>
